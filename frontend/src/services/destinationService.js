@@ -1,0 +1,30 @@
+
+const API_URL = "http://127.0.0.1:5000/api/destinations";
+
+export async function getDestinations() {
+  const response = await fetch(API_URL);
+
+  if (!response.ok) {
+    throw new Error("Failed to fetch destinations");
+  }
+
+  return response.json();
+}
+
+export async function createDestination(destination) {
+  const response = await fetch(API_URL, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify(destination)
+  });
+
+  const data = await response.json();
+
+  if (!response.ok) {
+    throw new Error(data.message || "Failed to add destination");
+  }
+
+  return data;
+}

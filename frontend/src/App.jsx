@@ -1,122 +1,165 @@
-import { useState } from 'react'
-import heroImg from './assets/hero.png'
-import reactLogo from './assets/react.svg'
-import viteLogo from './assets/vite.svg'
-import './App.css'
+
+import { useEffect, useState } from "react";
+import {
+  getDestinations,
+  createDestination
+} from "./services/destinationService";
+import "./App.css";
+
+const initialForm = {
+  name: "",
+  district: "",
+  category: "",
+  description: "",
+  imageUrl: ""
+};
 
 function App() {
-  const [count, setCount] = useState(0)
+  const [destinations, setDestinations] = useState([]);
+  const [form, setForm] = useState(initialForm);
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState("");
+  const [message, setMessage] = useState("");
+
+  useEffect(() => {
+    async function loadDestinations() {
+      try {
+        const data = await getDestinations();
+        setDestinations(data);
+      } catch (err) {
+        setError(err.message);
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    loadDestinations();
+  }, []);
+
+  function handleChange(event) {
+    const { name, value } = event.target;
+    setForm((previous) => ({
+      ...previous,
+      [name]: value
+    }));
+  }
+
+  async function handleSubmit(event) {
+    event.preventDefault();
+    setError("");
+    setMessage("");
+    setSaving(true);
+
+    try {
+      const created = await createDestination(form);
+
+      setDestinations((previous) => [created, ...previous]);
+      setForm(initialForm);
+      setMessage("Destination added successfully!");
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setSaving(false);
+    }
+  }
 
   return (
-    <>
-      <section id="center">
-        <div className="hero">
-          <img src={heroImg} className="base" width="170" height="179" alt="" />
-          <img src={reactLogo} className="framework" alt="React logo" />
-          <img src={viteLogo} className="vite" alt="Vite logo" />
-        </div>
-        <div>
-          <h1>Get started</h1>
-          <p>
-            Edit <code>src/App.jsx</code> and save to test <code>HMR</code>
-          </p>
-        </div>
-        <button
-          type="button"
-          className="counter"
-          onClick={() => setCount((count) => count + 1)}
-        >
-          Count is {count}
-        </button>
-      </section>
+    <div className="app">
+      <header>
+        <h1>Explore Sri Lanka</h1>
+        <p>Discover the beauty of Sri Lanka</p>
+      </header>
 
-      <div className="ticks"></div>
+      <main>
+        <section>
+          <h2>Add New Destination</h2>
 
-      <section id="next-steps">
-        <div id="docs">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#documentation-icon"></use>
-          </svg>
-          <h2>Documentation</h2>
-          <p>Your questions, answered</p>
-          <ul>
-            <li>
-              <a href="https://vite.dev/" target="_blank">
-                <img className="logo" src={viteLogo} alt="" />
-                Explore Vite
-              </a>
-            </li>
-            <li>
-              <a href="https://react.dev/" target="_blank">
-                <img className="button-icon" src={reactLogo} alt="" />
-                Learn more
-              </a>
-            </li>
-          </ul>
-        </div>
-        <div id="social">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#social-icon"></use>
-          </svg>
-          <h2>Connect with us</h2>
-          <p>Join the Vite community</p>
-          <ul>
-            <li>
-              <a href="https://github.com/vitejs/vite" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#github-icon"></use>
-                </svg>
-                GitHub
-              </a>
-            </li>
-            <li>
-              <a href="https://chat.vite.dev/" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#discord-icon"></use>
-                </svg>
-                Discord
-              </a>
-            </li>
-            <li>
-              <a href="https://x.com/vite_js" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#x-icon"></use>
-                </svg>
-                X.com
-              </a>
-            </li>
-            <li>
-              <a href="https://bsky.app/profile/vite.dev" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#bluesky-icon"></use>
-                </svg>
-                Bluesky
-              </a>
-            </li>
-          </ul>
-        </div>
-      </section>
+          <form className="destination-form" onSubmit={handleSubmit}>
+            <input
+              name="name"
+              placeholder="Destination name"
+              value={form.name}
+              onChange={handleChange}
+              required
+            />
 
-      <div className="ticks"></div>
-      <section id="spacer"></section>
-    </>
-  )
+            <input
+              name="district"
+              placeholder="District"
+              value={form.district}
+              onChange={handleChange}
+              required
+            />
+
+            <select
+              name="category"
+              value={form.category}
+              onChange={handleChange}
+              required
+            >
+              <option value="">Select category</option>
+              <option value="Nature">Nature</option>
+              <option value="Historical">Historical</option>
+              <option value="Beach">Beach</option>
+              <option value="Adventure">Adventure</option>
+              <option value="Cultural">Cultural</option>
+            </select>
+
+            <textarea
+              name="description"
+              placeholder="Destination description"
+              value={form.description}
+              onChange={handleChange}
+              required
+            />
+
+            <input
+              name="imageUrl"
+              placeholder="Image URL (optional)"
+              value={form.imageUrl}
+              onChange={handleChange}
+            />
+
+            <button type="submit" disabled={saving}>
+              {saving ? "Saving..." : "Add Destination"}
+            </button>
+          </form>
+
+          {message && <p className="success-message" role="status">{message}</p>}
+          {error && <p className="error-message" role="alert">{error}</p>}
+        </section>
+
+        <section>
+          <h2>Tourist Destinations</h2>
+
+          {loading && <p>Loading destinations...</p>}
+
+          {!loading && destinations.length === 0 && (
+            <p>No destinations available.</p>
+          )}
+
+          <div className="destination-grid">
+            {destinations.map((destination) => (
+              <article className="destination-card" key={destination._id}>
+                {destination.imageUrl && (
+                  <img
+                    src={destination.imageUrl}
+                    alt={destination.name}
+                  />
+                )}
+
+                <h3>{destination.name}</h3>
+                <p><strong>District:</strong> {destination.district}</p>
+                <p><strong>Category:</strong> {destination.category}</p>
+                <p>{destination.description}</p>
+              </article>
+            ))}
+          </div>
+        </section>
+      </main>
+    </div>
+  );
 }
 
-export default App
+export default App;
