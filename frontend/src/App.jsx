@@ -4,6 +4,7 @@ import {
   getDestinations,
   createDestination
 } from "./services/destinationService";
+import Homepage from "./components/Homepage";
 import "./App.css";
 
 const initialForm = {
@@ -65,17 +66,21 @@ function App() {
   }
 
   return (
-    <div className="app">
-      <header>
-        <h1>Explore Sri Lanka</h1>
-        <p>Discover the beauty of Sri Lanka</p>
-      </header>
+    <div className="app" id="top">
+      <Homepage />
 
-      <main>
-        <section>
-          <h2>Add New Destination</h2>
+      <main className="destination-library" id="destination-library">
+        <section className="library-intro">
+          <p className="eyebrow">Your next chapter</p>
+          <h2>Explore the collection</h2>
+          <p>Find a destination worth taking the long way to.</p>
+        </section>
 
-          <form className="destination-form" onSubmit={handleSubmit}>
+        <section className="destination-manager">
+          <details>
+            <summary>Add a destination to your collection</summary>
+
+            <form className="destination-form" onSubmit={handleSubmit}>
             <input
               name="name"
               placeholder="Destination name"
@@ -124,14 +129,21 @@ function App() {
             <button type="submit" disabled={saving}>
               {saving ? "Saving..." : "Add Destination"}
             </button>
-          </form>
+            </form>
 
-          {message && <p className="success-message" role="status">{message}</p>}
-          {error && <p className="error-message" role="alert">{error}</p>}
+            {message && <p className="success-message" role="status">{message}</p>}
+            {error && <p className="error-message" role="alert">{error}</p>}
+          </details>
         </section>
 
-        <section>
-          <h2>Tourist Destinations</h2>
+        <section className="destination-results">
+          <div className="section-heading">
+            <div>
+              <p className="eyebrow">From the database</p>
+              <h2>Tourist destinations</h2>
+            </div>
+            <span>{destinations.length} places</span>
+          </div>
 
           {loading && <p>Loading destinations...</p>}
 
