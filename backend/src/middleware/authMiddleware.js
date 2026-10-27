@@ -1,4 +1,5 @@
 const jwt = require("jsonwebtoken");
+const User = require("../models/User");
 
 function getToken(req) {
   return req.cookies?.explore_world_session;
@@ -19,4 +20,17 @@ function requireAuth(req, res, next) {
   }
 }
 
-module.exports = { requireAuth };
+async function requireAdmin(req, res, next) {
+  try {
+    const user = await User.findById(req.user.sub).select("role");
+    if (!user || user.role !== "admin") {
+      return res.status(403).json({ message: "Administrator access required" });
+    }
+
+    return next();
+  } catch (error) {
+    return next(error);
+  }
+}
+
+module.exports = { requireAuth, requireAdmin };

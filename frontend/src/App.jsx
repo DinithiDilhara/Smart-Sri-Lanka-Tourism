@@ -234,8 +234,8 @@ function Login() {
     event.preventDefault();
     setStatus({ loading: true, error: "" });
     try {
-      await login(form);
-      navigate("/admin/destinations");
+      const { user } = await login(form);
+      navigate(user?.role === "admin" ? "/admin/destinations" : "/");
     } catch (error) {
       setStatus({ loading: false, error: error.message });
     }
@@ -278,8 +278,8 @@ function Signup() {
     event.preventDefault();
     setStatus({ loading: true, error: "" });
     try {
-      await signup(form);
-      navigate("/admin/destinations");
+      const { user } = await signup(form);
+      navigate(user?.role === "admin" ? "/admin/destinations" : "/");
     } catch (error) {
       setStatus({ loading: false, error: error.message });
     }
@@ -314,16 +314,17 @@ function Signup() {
 
 function ProtectedRoute({ children }) {
   const location = useLocation();
-  const [state, setState] = useState({ loading: true, authenticated: false });
+  const [state, setState] = useState({ loading: true, user: null });
 
   useEffect(() => {
     getCurrentUser()
-      .then(() => setState({ loading: false, authenticated: true }))
-      .catch(() => setState({ loading: false, authenticated: false }));
+      .then(({ user }) => setState({ loading: false, user }))
+      .catch(() => setState({ loading: false, user: null }));
   }, []);
 
   if (state.loading) return <main className="auth-page"><p>Checking your session...</p></main>;
-  if (!state.authenticated) return <Navigate to="/login" replace state={{ from: location.pathname }} />;
+  if (!state.user) return <Navigate to="/login" replace state={{ from: location.pathname }} />;
+  if (state.user.role !== "admin") return <Navigate to="/" replace />;
   return children;
 }
 

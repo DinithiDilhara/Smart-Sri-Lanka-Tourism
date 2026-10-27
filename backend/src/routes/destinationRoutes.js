@@ -1,7 +1,7 @@
 
 const express = require("express");
 const router = express.Router();
-const { requireAuth } = require("../middleware/authMiddleware");
+const { requireAuth, requireAdmin } = require("../middleware/authMiddleware");
 const { requireAllowedOrigin } = require("../middleware/csrfMiddleware");
 
 const {
@@ -12,11 +12,11 @@ const {
   deleteDestination
 } = require("../controllers/destinationController");
 
-router.use(requireAuth);
-router.post("/", requireAllowedOrigin, createDestination);
 router.get("/", getDestinations);
 router.get("/:id", getDestinationById);
-router.put("/:id", requireAllowedOrigin, updateDestination);
-router.delete("/:id", requireAllowedOrigin, deleteDestination);
+router.post("/", requireAuth, requireAdmin, requireAllowedOrigin, createDestination);
+router.put("/:id", requireAuth, requireAdmin, requireAllowedOrigin, updateDestination);
+router.patch("/:id", requireAuth, requireAdmin, requireAllowedOrigin, updateDestination);
+router.delete("/:id", requireAuth, requireAdmin, requireAllowedOrigin, deleteDestination);
 
 module.exports = router;
