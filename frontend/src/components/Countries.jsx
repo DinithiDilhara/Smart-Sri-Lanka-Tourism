@@ -1,38 +1,48 @@
 import { useState } from "react";
 import { Link, useParams } from "react-router-dom";
+import { countryImage } from "../data/destinationImages";
+import ImagePlaceholder from "./ImagePlaceholder";
 
 const countries = [
   {
-    name: "Morocco",
-    slug: "morocco",
-    region: "North Africa",
-    tagline: "Desert light and timeless detail",
-    image: "/images/homepage/morocco.webp",
-    alt: "Warm Moroccan architecture and a sunlit courtyard"
+    name: "Sri Lanka",
+    slug: "sri-lanka",
+    region: "South Asia",
+    tagline: "Island rhythms and ancient trails",
+    image: countryImage["sri-lanka"],
+    alt: "Sigiriya rock fortress in Sri Lanka"
+  },
+  {
+    name: "India",
+    slug: "india",
+    region: "South Asia",
+    tagline: "History, culture and vivid landscapes",
+    image: countryImage.india,
+    alt: "Taj Mahal in India"
   },
   {
     name: "Thailand",
     slug: "thailand",
     region: "Southeast Asia",
     tagline: "Golden temples, turquoise mornings",
-    image: null,
-    alt: ""
+    image: countryImage.thailand,
+    alt: "Phi Phi Islands in Thailand"
   },
   {
     name: "Nepal",
     slug: "nepal",
     region: "South Asia",
     tagline: "A higher perspective on wonder",
-    image: null,
-    alt: ""
+    image: countryImage.nepal,
+    alt: "Mount Everest in Nepal"
   },
   {
     name: "Indonesia",
     slug: "indonesia",
     region: "Southeast Asia",
     tagline: "Where wild horizons meet warm seas",
-    image: null,
-    alt: ""
+    image: countryImage.indonesia,
+    alt: "Kelingking Beach in Indonesia"
   },
   {
     name: "Sri Lanka",
@@ -43,15 +53,6 @@ const countries = [
     alt: ""
   }
 ];
-
-function CountryPlaceholder({ country }) {
-  return (
-    <div className="country-image-placeholder" role="img" aria-label={`${country.name} photograph coming soon`}>
-      <span>Country photograph</span>
-      <strong>Coming soon</strong>
-    </div>
-  );
-}
 
 function CompassMark() {
   return (
@@ -110,11 +111,7 @@ function CountryList() {
         {visibleCountries.map(({ country, position }) => (
           <article className={`country-card country-card-${position}`} key={country.slug}>
             <div className="country-image">
-              {country.image ? (
-                <img src={country.image} alt={country.alt} />
-              ) : (
-                <CountryPlaceholder country={country} />
-              )}
+              {country.image ? <img src={country.image} alt={country.alt} /> : <ImagePlaceholder />}
               <div className="country-card-shade" />
               <span className="country-index">0{countries.indexOf(country) + 1}</span>
             </div>

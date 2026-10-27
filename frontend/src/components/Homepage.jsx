@@ -1,41 +1,60 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
+import sigiriyaImage from "../assets/destinations/srilanka/sigiriya.jpg";
+import galleImage from "../assets/destinations/srilanka/galle.jpg";
+import mirissaImage from "../assets/destinations/srilanka/mirissa.jpg";
+import nineArchesImage from "../assets/destinations/srilanka/nine-arc-bridge.jpg";
+import tajMahalImage from "../assets/destinations/india/Taj Mahal.jpg";
+import phewaLakeImage from "../assets/destinations/nepal/Phewa Lake Serenity.jpg";
+import phiPhiImage from "../assets/destinations/thailand/Phi Phi Islands.jpg";
 
-const showcases = [
+const heroDestinations = [
   {
-    name: "Patagonia",
-    region: "South America",
-    detail: "Torres del Paine",
-    image: "/images/homepage/patagonia.webp",
-    alt: "Snow-capped peaks and blue lakes in Patagonia"
+    name: "Sigiriya",
+    location: "Sri Lanka · Cultural Triangle",
+    image: sigiriyaImage,
+    alt: "Sigiriya rock fortress rising above the green landscape"
   },
   {
-    name: "Iceland",
-    region: "Europe",
-    detail: "Glacier lagoons",
-    image: "/images/homepage/iceland.webp",
-    alt: "Turquoise ice cave glowing under the Icelandic sky"
+    name: "Galle",
+    location: "Sri Lanka · Southern Coast",
+    image: galleImage,
+    alt: "Historic Galle Fort beside the Indian Ocean"
   },
   {
-    name: "Morocco",
-    region: "Africa",
-    detail: "Sahara trails",
-    image: "/images/homepage/morocco.webp",
-    alt: "Warm Moroccan architecture and a sunlit courtyard"
+    name: "Mirissa",
+    location: "Sri Lanka · Indian Ocean",
+    image: mirissaImage,
+    alt: "Tropical beach and turquoise water at Mirissa"
+  },
+  {
+    name: "Ella",
+    location: "Sri Lanka · Hill Country",
+    image: nineArchesImage,
+    alt: "Nine Arch Bridge surrounded by the green hills of Ella"
   }
 ];
 
-function ArrowIcon({ direction }) {
+const featuredDestinations = [
+  { name: "Sigiriya", location: "Sri Lanka", image: sigiriyaImage, to: "/destinations/sigiriya" },
+  { name: "Ella", location: "Sri Lanka", image: nineArchesImage, to: "/destinations/nine-arch-bridge" },
+  { name: "Galle", location: "Sri Lanka", image: galleImage, to: "/destinations/galle" },
+  { name: "Phi Phi Islands", location: "Thailand", image: phiPhiImage, to: "/destinations/phi-phi-islands" },
+  { name: "Phewa Lake", location: "Nepal", image: phewaLakeImage, to: "/destinations/phewa-lake-serenity" },
+  { name: "Taj Mahal", location: "India", image: tajMahalImage, to: "/destinations/taj-mahal" }
+];
+
+function ArrowIcon() {
   return (
-    <svg aria-hidden="true" viewBox="0 0 24 24">
-      <path d={direction === "next" ? "m9 5 7 7-7 7" : "m15 5-7 7 7 7"} />
+    <svg aria-hidden="true" viewBox="0 0 20 20">
+      <path d="M3 10h13M10 4l6 6-6 6" />
     </svg>
   );
 }
 
 function CompassMark() {
   return (
-    <span className="brand-mark" aria-hidden="true">
+    <span className="landing-mark" aria-hidden="true">
       <span />
       <span />
     </span>
@@ -44,91 +63,104 @@ function CompassMark() {
 
 function Homepage() {
   const [activeIndex, setActiveIndex] = useState(0);
+  const [isCarouselPaused, setIsCarouselPaused] = useState(false);
 
-  function moveCarousel(direction) {
-    setActiveIndex((current) => (
-      (current + direction + showcases.length) % showcases.length
-    ));
-  }
+  useEffect(() => {
+    const revealElements = document.querySelectorAll(".landing-reveal");
+    const observer = new IntersectionObserver(
+      (entries) => entries.forEach((entry) => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add("is-visible");
+          observer.unobserve(entry.target);
+        }
+      }),
+      { threshold: 0.12 }
+    );
 
-  const visibleShowcases = showcases.map(
-    (_, offset) => showcases[(activeIndex + offset) % showcases.length]
-  );
+    revealElements.forEach((element) => observer.observe(element));
+    return () => observer.disconnect();
+  }, []);
+
+  useEffect(() => {
+    const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    if (prefersReducedMotion) return undefined;
+
+    const timer = window.setInterval(() => {
+      if (isCarouselPaused) return;
+      setActiveIndex((current) => (current + 1) % heroDestinations.length);
+    }, 5000);
+
+    return () => window.clearInterval(timer);
+  }, [isCarouselPaused]);
+
+  const activeDestination = heroDestinations[activeIndex];
+  const nextDestination = heroDestinations[(activeIndex + 1) % heroDestinations.length];
 
   return (
-    <section className="homepage">
-      <div className="hero-shell">
-        <div className="hero-backdrop" />
+    <main className="landing-page">
+      <header className="landing-nav">
+        <Link className="landing-wordmark" to="/" aria-label="Explore World home">
+          <CompassMark />
+          <span>Explore <strong>World</strong></span>
+        </Link>
 
-        <header className="site-nav">
-          <Link className="wordmark" to="/" aria-label="Explore World home">
-            <CompassMark />
-            <span>Explore <strong>World</strong></span>
-          </Link>
+        <nav className="landing-links" aria-label="Main navigation">
+          <Link className="is-current" to="/">Home</Link>
+          <a href="#featured-destinations">Explore</a>
+          <Link to="/countries">Destinations</Link>
+          <Link to="/about">About</Link>
+        </nav>
 
-          <nav className="nav-links" aria-label="Main navigation">
-            <a href="#destination-library">Discover</a>
-            <a href="#destination-library">Journeys</a>
-            <a href="#destination-library">Experiences</a>
-            <Link to="/countries">Destinations</Link>
-          </nav>
+        <div className="landing-actions">
+          <Link to="/destinations" aria-label="Search destinations">Search</Link>
+          <Link className="landing-login" to="/admin/destinations">Login</Link>
+        </div>
+      </header>
 
-          <Link className="nav-cta" to="/countries">Explore now <span aria-hidden="true">↗</span></Link>
-        </header>
-
-        <div className="hero-content">
-          <div className="hero-copy">
-            <p className="eyebrow">A world beyond the ordinary</p>
-            <h1>Wonders <em>of the</em> world</h1>
-            <p className="hero-description">
-              Curated journeys to the planet&apos;s most extraordinary places,
-              blending wild beauty with meaningful discovery.
-            </p>
-            <Link className="primary-button" to="/countries">
+      <section className="landing-hero">
+        <div className="landing-hero-copy landing-reveal">
+          <p className="landing-eyebrow">Travel slowly · See deeply</p>
+          <h1><span>Explore</span><br /><span><em>the</em> World</span></h1>
+          <p className="landing-description">
+            Curated places, thoughtful journeys, and the kind of moments that
+            stay with you long after you return home.
+          </p>
+          <div className="landing-hero-actions">
+            <Link className="landing-primary-button" to="/countries">
+              Start Exploring <ArrowIcon />
+            </Link>
+            <Link className="landing-text-link" to="/countries">
               Explore destinations <span aria-hidden="true">↗</span>
             </Link>
           </div>
-
-          <div className="showcase-area" aria-label="Featured destinations">
-            <div className="showcase-heading">
-              <span>Featured journeys</span>
-              <span className="showcase-count">{String(activeIndex + 1).padStart(2, "0")} / 03</span>
-            </div>
-            <div className="showcase-rail">
-              {visibleShowcases.map((destination, index) => (
-                <article
-                  className={`showcase-card ${index === 0 ? "is-active" : ""}`}
-                  key={destination.name}
-                >
-                  <img src={destination.image} alt={destination.alt} />
-                  <div className="card-shade" />
-                  <div className="card-label">
-                    <span>{destination.region}</span>
-                    <h2>{destination.name}</h2>
-                    <p>{destination.detail}</p>
-                  </div>
-                  <span className="card-index">0{(activeIndex + index) % 3 + 1}</span>
-                </article>
-              ))}
-            </div>
-          </div>
         </div>
 
-        <div className="hero-footer">
-          <div className="scroll-cue">
-            <span className="scroll-line" />
-            <span>Scroll to discover</span>
+        <div
+          className="landing-editorial-visual landing-reveal"
+          onMouseEnter={() => setIsCarouselPaused(true)}
+          onMouseLeave={() => setIsCarouselPaused(false)}
+          onFocus={() => setIsCarouselPaused(true)}
+          onBlur={(event) => {
+            if (!event.currentTarget.contains(event.relatedTarget)) setIsCarouselPaused(false);
+          }}
+        >
+          <div className="landing-main-photo">
+            <img key={activeDestination.image} src={activeDestination.image} alt={activeDestination.alt} />
+            <div className="landing-photo-label">
+              <span>Featured destination</span>
+              <strong>{activeDestination.name}</strong>
+              <small>{activeDestination.location}</small>
+            </div>
           </div>
-          <div className="carousel-controls">
-            <button type="button" onClick={() => moveCarousel(-1)} aria-label="Previous featured destination">
-              <ArrowIcon direction="previous" />
-            </button>
-            <button type="button" onClick={() => moveCarousel(1)} aria-label="Next featured destination">
-              <ArrowIcon direction="next" />
-            </button>
+          <div className="landing-secondary-photo">
+            <img key={nextDestination.image} src={nextDestination.image} alt={nextDestination.alt} />
+            <span>{nextDestination.name}<br /><small>{nextDestination.location}</small></span>
           </div>
-          <div className="pagination" aria-label="Featured destination pagination">
-            {showcases.map((destination, index) => (
+          <div className="landing-carousel-controls">
+            <span>{String(activeIndex + 1).padStart(2, "0")} / {String(heroDestinations.length).padStart(2, "0")}</span>
+          </div>
+          <div className="landing-dots" aria-label="Featured destination pagination">
+            {heroDestinations.map((destination, index) => (
               <button
                 type="button"
                 key={destination.name}
@@ -140,8 +172,31 @@ function Homepage() {
             ))}
           </div>
         </div>
-      </div>
-    </section>
+      </section>
+
+      <section className="landing-featured landing-reveal" id="featured-destinations" aria-labelledby="featured-heading">
+        <div className="landing-featured-heading">
+          <div>
+            <p className="landing-eyebrow">Featured destinations</p>
+            <h2 id="featured-heading">Inspiring places <em>around the world.</em></h2>
+          </div>
+          <Link className="landing-text-link" to="/countries">View all destinations <span aria-hidden="true">↗</span></Link>
+        </div>
+        <div className="landing-featured-grid">
+          {featuredDestinations.map((destination) => (
+            <Link className="landing-featured-card" to={destination.to} key={destination.name}>
+              <div className="landing-featured-image">
+                <img src={destination.image} alt={`${destination.name}, ${destination.location}`} />
+              </div>
+              <div className="landing-featured-meta">
+                <strong>{destination.name}</strong>
+                <span>{destination.location}</span>
+              </div>
+            </Link>
+          ))}
+        </div>
+      </section>
+    </main>
   );
 }
 
