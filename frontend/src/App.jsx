@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { Link, Navigate, Route, Routes, useLocation, useNavigate, useParams } from "react-router-dom";
 import Homepage from "./components/Homepage";
+import Countries from "./components/Countries";
 import { getDestinations } from "./services/destinationService";
 import { getCurrentUser, login, logout, signup } from "./services/authService";
 import { countryImage, destinationImages, normalizeSlug } from "./data/destinationImages";
@@ -147,10 +148,6 @@ function DestinationCard({ destination }) {
   );
 }
 
-function Countries() {
-  return <main className="app-shell"><Header /><section className="page-heading"><p className="kicker">Explore our countries</p><h1>Discover the <em>World</em></h1><p>From tropical beaches to majestic mountains, explore our handpicked countries.</p></section><section className="country-grid content-width">{countries.map((country) => <Link className="country-tile" to={`/countries/${country.slug}`} key={country.slug}>{country.image ? <img src={country.image} alt={`${country.name} landscape`} /> : <ImagePlaceholder />}<div><h2>{country.name}</h2><p>{country.tagline}</p></div></Link>)}</section></main>;
-}
-
 function HotelCard({ hotel }) {
   const official = hotelOfficialDetails[hotel.id];
   return (
@@ -210,12 +207,118 @@ function Hotels() {
   );
 }
 
+const destinationCategories = ["All", "Nature", "Heritage", "Beach", "Adventure", "Culture"];
+
+function DestinationFilters({ activeCategory, onChange }) {
+  return (
+    <section className="filter-bar content-width" aria-label="Filter destinations by category">
+      {destinationCategories.map((category) => (
+        <button
+          key={category}
+          type="button"
+          className={activeCategory === category ? "active" : ""}
+          aria-pressed={activeCategory === category}
+          onClick={() => onChange(category)}
+        >
+          {category}
+        </button>
+      ))}
+    </section>
+  );
+}
+
 function CountryDestinations() {
   const { countrySlug } = useParams();
-  const country = countries.find((item) => item.slug === normalizeSlug(countrySlug || "sri-lanka"));
-  if (!country) return <main className="country-placeholder-page"><p className="eyebrow">Unknown country</p><h1>That journey is not on the map yet.</h1><Link className="primary-button" to="/countries">Return to countries <span aria-hidden="true">↗</span></Link></main>;
-  const list = destinations.filter((item) => item.countrySlug === country.slug);
-  return <main className="app-shell"><Header /><section className="country-hero" style={country.image ? { backgroundImage: `linear-gradient(90deg, rgba(1, 38, 35, .92), rgba(1, 38, 35, .12)), url(${country.image})` } : undefined}><div><p className="kicker">{country.region}</p><h1>{country.name}</h1><p>{country.name === "Sri Lanka" ? "The Pearl of the Indian Ocean" : country.tagline}</p><span>Explore a land of ancient stories, warm people and unforgettable landscapes.</span></div></section><section className="filter-bar content-width"><button className="active" type="button">All</button>{["Nature", "Heritage", "Beach", "Adventure"].map((filter) => <button type="button" key={filter}>{filter}</button>)}</section><section className="content-width destination-grid country-results">{list.map((destination) => <DestinationCard key={destination.id} destination={destination} />)}</section></main>;
+  const [activeCategory, setActiveCategory] = useState("All");
+  const country = countries.find((item) => item.slug === normalizeSlug(countrySlug));
+
+  if (!country) {
+    return (
+      <main className="country-placeholder-page">
+        <p className="eyebrow">Unknown country</p>
+        <h1>That journey is not on the map yet.</h1>
+        <Link className="primary-button" to="/countries">Return to countries ↗</Link>
+      </main>
+    );
+  }
+
+  const countryDestinations = destinations.filter((item) => item.countrySlug === country.slug);
+  const filteredDestinations = countryDestinations.filter(
+    (item) => activeCategory === "All" || item.category === activeCategory
+  );
+
+  return (
+    <main className="app-shell">
+      <Header />
+      <section
+        className="country-hero"
+        style={country.image ? {
+          backgroundImage: `linear-gradient(90deg, rgba(1, 38, 35, .92), rgba(1, 38, 35, .12)), url(${country.image})`
+        } : undefined}
+      >
+        <div>
+          <p className="kicker">{country.region}</p>
+          <h1>{country.name}</h1>
+          <p>{country.name === "Sri Lanka" ? "The Pearl of the Indian Ocean" : country.tagline}</p>
+          <span>Discover remarkable places and experiences across {country.name}.</span>
+        </div>
+      </section>
+      <DestinationFilters activeCategory={activeCategory} onChange={setActiveCategory} />
+      <section className="content-width destination-grid country-results" aria-live="polite">
+        {filteredDestinations.map((destination) => (
+          <DestinationCard key={`${destination.countrySlug}-${destination.id}`} destination={destination} />
+        ))}
+      </section>
+      {filteredDestinations.length === 0 && (
+        <p className="content-width">No destinations match this category in {country.name}.</p>
+      )}
+    </main>
+  );
+}
+
+function AllDestinations() {
+  const [activeCategory, setActiveCategory] = useState("All");
+  const [selectedCountry, setSelectedCountry] = useState("all");
+  const filteredDestinations = destinations.filter((item) =>
+    (selectedCountry === "all" || item.countrySlug === selectedCountry) &&
+    (activeCategory === "All" || item.category === activeCategory)
+  );
+
+  return (
+    <main className="app-shell">
+      <Header />
+      <section className="page-heading">
+        <p className="kicker">Explore the world</p>
+        <h1>Discover <em>destinations.</em></h1>
+        <p>Find places worth exploring across our five countries.</p>
+      </section>
+      <div className="content-width" style={{ maxWidth: 290, marginBottom: 12 }}>
+        <label htmlFor="destination-country-filter" style={{ display: "block", marginBottom: 8 }}>
+          Country
+        </label>
+        <select
+          id="destination-country-filter"
+          value={selectedCountry}
+          onChange={(event) => setSelectedCountry(event.target.value)}
+          style={{ width: "100%", padding: 12, border: "1px solid #dce5dd", borderRadius: 6 }}
+        >
+          <option value="all">All countries</option>
+          {countries.map((country) => (
+            <option key={country.slug} value={country.slug}>{country.name}</option>
+          ))}
+        </select>
+      </div>
+      <DestinationFilters activeCategory={activeCategory} onChange={setActiveCategory} />
+      <section className="content-width destination-grid country-results" aria-live="polite">
+        {filteredDestinations.map((destination) => (
+          <DestinationCard key={`${destination.countrySlug}-${destination.id}`} destination={destination} />
+        ))}
+      </section>
+      {filteredDestinations.length === 0 && (
+        <p className="content-width">No destinations match these filters.</p>
+      )}
+    </main>
+  );
 }
 
 function DestinationDetails() {
@@ -340,7 +443,7 @@ function About() {
 }
 
 function App() {
-  return <Routes><Route path="/" element={<Homepage />} /><Route path="/login" element={<Login />} /><Route path="/signup" element={<Signup />} /><Route path="/countries" element={<Countries />} /><Route path="/countries/:countrySlug" element={<CountryDestinations />} /><Route path="/destinations" element={<CountryDestinations />} /><Route path="/destinations/:destinationId" element={<DestinationDetails />} /><Route path="/hotels" element={<Hotels />} /><Route path="/admin/destinations" element={<ProtectedRoute><Admin /></ProtectedRoute>} /><Route path="/about" element={<About />} /><Route path="*" element={<Navigate to="/" replace />} /></Routes>;
+  return <Routes><Route path="/" element={<Homepage />} /><Route path="/login" element={<Login />} /><Route path="/signup" element={<Signup />} /><Route path="/countries" element={<Countries />} /><Route path="/countries/:countrySlug" element={<CountryDestinations />} /><Route path="/destinations" element={<AllDestinations />} /><Route path="/destinations/:destinationId" element={<DestinationDetails />} /><Route path="/hotels" element={<Hotels />} /><Route path="/admin/destinations" element={<ProtectedRoute><Admin /></ProtectedRoute>} /><Route path="/about" element={<About />} /><Route path="*" element={<Navigate to="/" replace />} /></Routes>;
 }
 
 export default App;

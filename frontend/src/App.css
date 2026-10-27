@@ -464,3 +464,334 @@ h1 em, h2 em { font-family: Georgia, serif; font-weight: 400; }
 @media (prefers-reduced-motion: reduce) {
   .landing-hero h1 span, .landing-main-photo img, .landing-featured-image img { animation: none; transition: none; }
 }
+
+/* COUNTRIES PAGE â€” SCOPED STYLES */
+
+.countries-page {
+  min-height: 100vh;
+  background: #fff;
+  color: #14332e;
+  overflow-x: clip;
+}
+
+.countries-topbar {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 28px 32px;
+}
+
+.countries-wordmark {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 20px;
+  font-weight: 700;
+  color: #14332e;
+}
+
+.countries-wordmark strong {
+  color: #006b42;
+}
+
+.countries-page .brand-mark,
+.country-placeholder-page .brand-mark {
+  position: relative;
+  display: inline-grid;
+  width: 34px;
+  height: 34px;
+  place-items: center;
+  border: 1px solid #006b42;
+  border-radius: 50%;
+}
+
+.countries-page .brand-mark span,
+.country-placeholder-page .brand-mark span {
+  width: 16px;
+  height: 16px;
+  border: 1px solid #006b42;
+  border-radius: 50%;
+}
+
+.countries-header {
+  max-width: 850px;
+  margin: 45px auto 45px;
+  padding: 0 24px;
+  text-align: center;
+}
+
+.countries-header .eyebrow {
+  color: #006b42;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+}
+
+.countries-header h1 {
+  margin: 14px 0 18px;
+  font-family: "Playfair Display", Georgia, serif;
+  font-size: clamp(48px, 6vw, 82px);
+  font-weight: 500;
+  letter-spacing: -0.06em;
+  line-height: 1.1;
+}
+
+.countries-header > p:last-child {
+  color: #71817a;
+  font-size: 15px;
+  line-height: 1.7;
+}
+
+.country-carousel {
+  position: relative;
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 0 70px 70px;
+}
+
+.countries-page .country-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  align-items: stretch;
+  gap: 20px;
+  padding: 0;
+}
+
+.countries-page .country-card {
+  min-width: 0;
+  overflow: hidden;
+  border-radius: 16px;
+  background: #fff;
+  box-shadow: 0 12px 35px rgba(0, 35, 25, 0.1);
+  transition: transform 0.3s ease;
+}
+
+.countries-page .country-card:hover {
+  transform: translateY(-6px);
+}
+
+.countries-page .country-image {
+  position: relative;
+  height: 350px;
+  overflow: hidden;
+  background: #e8eee9;
+}
+
+.countries-page .country-image img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.5s ease;
+}
+
+.countries-page .country-card:hover img {
+  transform: scale(1.05);
+}
+
+.countries-page .country-card-shade {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    180deg,
+    transparent 55%,
+    rgba(0, 35, 25, 0.35)
+  );
+  pointer-events: none;
+}
+
+.countries-page .country-index {
+  position: absolute;
+  top: 16px;
+  left: 18px;
+  color: #fff;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.countries-page .country-card-content {
+  padding: 22px;
+}
+
+.countries-page .country-card-content > span {
+  color: #006b42;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.countries-page .country-card-content h2 {
+  margin: 8px 0;
+  font-family: "Playfair Display", Georgia, serif;
+  font-size: 29px;
+  font-weight: 500;
+}
+
+.countries-page .country-card-content p {
+  min-height: 40px;
+  color: #71817a;
+  font-size: 13px;
+  line-height: 1.6;
+}
+
+.country-explore-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  margin-top: 10px;
+  color: #006b42;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.country-explore-button:hover {
+  text-decoration: underline;
+}
+
+.country-carousel-arrow {
+  position: absolute;
+  z-index: 2;
+  top: 175px;
+  display: grid;
+  width: 42px;
+  height: 42px;
+  place-items: center;
+  border: 1px solid #dce5dd;
+  border-radius: 50%;
+  background: #fff;
+  color: #006b42;
+  font-size: 22px;
+  cursor: pointer;
+}
+
+.country-carousel-arrow-left {
+  left: 12px;
+}
+
+.country-carousel-arrow-right {
+  right: 12px;
+}
+
+/* COUNTRY DETAILS */
+
+.country-placeholder-page {
+  min-height: 100vh;
+  padding: 30px max(24px, calc((100% - 1200px) / 2));
+  background: #fff;
+}
+
+.country-placeholder-page .countries-topbar {
+  padding: 0 0 40px;
+}
+
+.country-placeholder-page .countries-header {
+  margin: 10px auto 45px;
+}
+
+.country-destinations-section h2 {
+  font-family: "Playfair Display", Georgia, serif;
+  font-size: 36px;
+  font-weight: 500;
+}
+
+.country-placeholder-page .country-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 22px;
+  padding: 0 0 50px;
+}
+
+.country-placeholder-page .country-card {
+  min-width: 0;
+  overflow: hidden;
+  border-radius: 12px;
+  background: #f7f5ee;
+}
+
+.country-placeholder-page .country-image {
+  height: 220px;
+}
+
+.country-placeholder-page .country-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.country-placeholder-page .country-card-content {
+  padding: 16px;
+}
+
+.country-placeholder-page .country-card-content h2 {
+  margin: 6px 0;
+  font-size: 21px;
+}
+
+@media (max-width: 800px) {
+  .country-carousel {
+    padding-inline: 55px;
+  }
+
+  .countries-page .country-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .countries-page .country-card-previous {
+    display: none;
+  }
+
+  .country-placeholder-page .country-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 560px) {
+  .countries-topbar {
+    padding: 20px;
+  }
+
+  .countries-header {
+    margin: 30px auto;
+  }
+
+  .country-carousel {
+    padding: 0 46px 45px;
+  }
+
+  .countries-page .country-grid,
+  .country-placeholder-page .country-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .countries-page .country-card-previous,
+  .countries-page .country-card-next {
+    display: none;
+  }
+
+  .countries-page .country-image {
+    height: 310px;
+  }
+
+  .country-carousel-arrow {
+    top: 155px;
+    width: 34px;
+    height: 34px;
+  }
+  
+
+  .country-carousel-arrow-left {
+    left: 5px;
+  }
+
+  .country-carousel-arrow-right {
+    right: 5px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .countries-page .country-card,
+  .countries-page .country-image img {
+    transition: none;
+  }
+}
