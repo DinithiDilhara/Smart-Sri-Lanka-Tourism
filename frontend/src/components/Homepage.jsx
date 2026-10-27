@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { Link } from "react-router-dom";
 
 const showcases = [
   {
@@ -60,19 +61,19 @@ function Homepage() {
         <div className="hero-backdrop" />
 
         <header className="site-nav">
-          <a className="wordmark" href="#top" aria-label="Explore World home">
+          <Link className="wordmark" to="/" aria-label="Explore World home">
             <CompassMark />
             <span>Explore <strong>World</strong></span>
-          </a>
+          </Link>
 
           <nav className="nav-links" aria-label="Main navigation">
             <a href="#destination-library">Discover</a>
             <a href="#destination-library">Journeys</a>
             <a href="#destination-library">Experiences</a>
-            <a href="#destination-library">Destinations</a>
+            <Link to="/countries">Destinations</Link>
           </nav>
 
-          <a className="nav-cta" href="#destination-library">Explore now <span aria-hidden="true">↗</span></a>
+          <Link className="nav-cta" to="/countries">Explore now <span aria-hidden="true">↗</span></Link>
         </header>
 
         <div className="hero-content">
@@ -83,9 +84,9 @@ function Homepage() {
               Curated journeys to the planet&apos;s most extraordinary places,
               blending wild beauty with meaningful discovery.
             </p>
-            <a className="primary-button" href="#destination-library">
+            <Link className="primary-button" to="/countries">
               Explore destinations <span aria-hidden="true">↗</span>
-            </a>
+            </Link>
           </div>
 
           <div className="showcase-area" aria-label="Featured destinations">
