@@ -43,7 +43,11 @@ cd frontend
 npm run dev
 ```
 
-The backend API is available at `http://127.0.0.1:5000`.
+The backend API is available at `http://127.0.0.1:5000`. During local frontend
+development, Vite proxies `/api` to this backend, so the browser does not need
+to make a cross-origin request. If the frontend and backend are deployed on
+different hosts, set `VITE_API_URL` in the frontend environment to the API
+base URL, including `/api`.
 
 ## Project Status
 Initial frontend and backend setup completed.

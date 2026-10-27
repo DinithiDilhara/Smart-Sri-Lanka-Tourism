@@ -113,7 +113,7 @@ function Homepage() {
 
         <div className="landing-actions">
           <Link to="/destinations" aria-label="Search destinations">Search</Link>
-          <Link className="landing-login" to="/admin/destinations">Login</Link>
+          <Link className="landing-login" to="/login">Login</Link>
         </div>
       </header>
 
