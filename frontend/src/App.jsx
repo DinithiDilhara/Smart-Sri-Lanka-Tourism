@@ -2,11 +2,11 @@
 import { Link, Navigate, Route, Routes, useLocation, useNavigate, useParams } from "react-router-dom";
 import Homepage from "./components/Homepage";
 import Countries from "./components/Countries";
-import { getDestinations } from "./services/destinationService";
 import { useDestinations } from "./hooks/useDestinations";
 import { getCurrentUser, login, logout, signup } from "./services/authService";
 import { countryImage, destinationImages, normalizeSlug } from "./data/destinationImages";
 import ImagePlaceholder from "./components/ImagePlaceholder";
+import AdminDashboard from "./components/AdminDashboard";
 import galleImage from "./assets/destinations/srilanka/galle.jpg";
 import "./App.css";
 
@@ -17,6 +17,25 @@ const countries = [
   { name: "Indonesia", slug: "indonesia", region: "Southeast Asia", tagline: "Islands, volcanoes and rich culture", image: countryImage.indonesia },
   { name: "Thailand", slug: "thailand", region: "Southeast Asia", tagline: "Beaches, islands and vibrant life", image: countryImage.thailand }
 ];
+
+// Preserve the five featured countries, while also supporting countries added in MongoDB.
+function availableCountries(databaseDestinations = []) {
+  const combined = new Map(countries.map((country) => [country.slug, country]));
+  for (const destination of databaseDestinations) {
+    const name = destination.country?.trim();
+    if (!name) continue;
+    const slug = normalizeSlug(name);
+    if (!slug || combined.has(slug)) continue;
+    combined.set(slug, {
+      name,
+      slug,
+      region: "Explore the world",
+      tagline: `Discover remarkable places in ${name}`,
+      image: destination.image || destination.imageUrl || null
+    });
+  }
+  return [...combined.values()];
+}
 
 const destinationDetails = {
   "sri-lanka": {
@@ -236,7 +255,9 @@ function CountryDestinations() {
     loading,
     error
   } = useDestinations();
-  const country = countries.find((item) => item.slug === normalizeSlug(countrySlug));
+  const country = availableCountries(databaseDestinations).find(
+    (item) => item.slug === normalizeSlug(countrySlug)
+  );
 
   if (!country) {
     return (
@@ -248,7 +269,9 @@ function CountryDestinations() {
     );
   }
 
-  const countryDestinations = databaseDestinations.filter((item) => item.countrySlug === country.slug);
+  const countryDestinations = databaseDestinations.filter(
+    (item) => normalizeSlug(item.country || "") === country.slug || item.countrySlug === country.slug
+  );
   const filteredDestinations = countryDestinations.filter(
     (item) => activeCategory === "All" || item.category === activeCategory
   );
@@ -292,8 +315,9 @@ function AllDestinations() {
     loading,
     error
   } = useDestinations();
+  const selectableCountries = availableCountries(databaseDestinations);
   const filteredDestinations = databaseDestinations.filter((item) =>
-    (selectedCountry === "all" || item.countrySlug === selectedCountry) &&
+    (selectedCountry === "all" || normalizeSlug(item.country || "") === selectedCountry || item.countrySlug === selectedCountry) &&
     (activeCategory === "All" || item.category === activeCategory)
   );
 
@@ -303,7 +327,7 @@ function AllDestinations() {
       <section className="page-heading">
         <p className="kicker">Explore the world</p>
         <h1>Discover <em>destinations.</em></h1>
-        <p>Find places worth exploring across our five countries.</p>
+        <p>Find remarkable places around the world.</p>
       </section>
       <div className="content-width" style={{ maxWidth: 290, marginBottom: 12 }}>
         <label htmlFor="destination-country-filter" style={{ display: "block", marginBottom: 8 }}>
@@ -316,7 +340,7 @@ function AllDestinations() {
           style={{ width: "100%", padding: 12, border: "1px solid #dce5dd", borderRadius: 6 }}
         >
           <option value="all">All countries</option>
-          {countries.map((country) => (
+          {selectableCountries.map((country) => (
             <option key={country.slug} value={country.slug}>{country.name}</option>
           ))}
         </select>
@@ -366,7 +390,7 @@ function Login() {
     setStatus({ loading: true, error: "" });
     try {
       const { user } = await login(form);
-      navigate(user?.role === "admin" ? "/admin/destinations" : "/");
+      navigate(user?.role === "admin" ? "/admin" : "/");
     } catch (error) {
       setStatus({ loading: false, error: error.message });
     }
@@ -410,7 +434,7 @@ function Signup() {
     setStatus({ loading: true, error: "" });
     try {
       const { user } = await signup(form);
-      navigate(user?.role === "admin" ? "/admin/destinations" : "/");
+      navigate(user?.role === "admin" ? "/admin" : "/");
     } catch (error) {
       setStatus({ loading: false, error: error.message });
     }
@@ -459,19 +483,12 @@ function ProtectedRoute({ children }) {
   return children;
 }
 
-function Admin() {
-  const [rows, setRows] = useState(destinations);
-  const [loading, setLoading] = useState(false);
-  useEffect(() => { getDestinations().then((data) => { if (data.length) setRows(data); }).catch(() => {}).finally(() => setLoading(false)); }, []);
-  return <main className="admin-shell"><Header admin /><div className="admin-layout"><aside className="admin-sidebar"><p>WORKSPACE</p>{["Dashboard", "Destinations", "Add Destination", "Manage Destinations", "Countries", "Users", "Settings"].map((item) => <Link className={item === "Manage Destinations" ? "selected" : ""} to={item === "Countries" ? "/countries" : "/admin/destinations"} key={item}><span>◈</span>{item}</Link>)}</aside><section className="admin-content"><div className="admin-heading"><div><p className="kicker">Admin workspace</p><h1>Manage Destinations</h1></div><Link className="lime-button" to="/admin/destinations">＋ Add Destination</Link></div><div className="admin-table"><div className="table-head"><span>#</span><span>Image</span><span>Destination</span><span>Country</span><span>Category</span><span>Actions</span></div>{rows.map((row, index) => <div className="table-row" key={row.id || row._id}><span>{index + 1}</span>{row.image || row.imageUrl ? <img src={row.image || row.imageUrl} alt="" /> : <ImagePlaceholder />}<b>{row.name}</b><span>{row.country || row.district || "Country unavailable"}</span><span>{row.category}</span><span className="row-actions">✎ / ♧</span></div>)}</div>{loading && <p>Loading destinations...</p>}</section></div></main>;
-}
-
 function About() {
   return <main className="app-shell"><Header /><section className="simple-page content-width"><p className="kicker">About Explore World</p><h1>Go further.<br /><em>Feel more.</em></h1><p>Explore World connects curious travelers with meaningful places, thoughtful guides and journeys that stay with you long after you return home.</p><Link className="lime-button" to="/countries">Start exploring →</Link></section></main>;
 }
 
 function App() {
-  return <Routes><Route path="/" element={<Homepage />} /><Route path="/login" element={<Login />} /><Route path="/signup" element={<Signup />} /><Route path="/countries" element={<Countries />} /><Route path="/countries/:countrySlug" element={<CountryDestinations />} /><Route path="/destinations" element={<AllDestinations />} /><Route path="/destinations/:destinationId" element={<DestinationDetails />} /><Route path="/hotels" element={<Hotels />} /><Route path="/admin/destinations" element={<ProtectedRoute><Admin /></ProtectedRoute>} /><Route path="/about" element={<About />} /><Route path="*" element={<Navigate to="/" replace />} /></Routes>;
+  return <Routes><Route path="/" element={<Homepage />} /><Route path="/login" element={<Login />} /><Route path="/signup" element={<Signup />} /><Route path="/countries" element={<Countries />} /><Route path="/countries/:countrySlug" element={<CountryDestinations />} /><Route path="/destinations" element={<AllDestinations />} /><Route path="/destinations/:destinationId" element={<DestinationDetails />} /><Route path="/hotels" element={<Hotels />} /><Route path="/admin" element={<ProtectedRoute><AdminDashboard /></ProtectedRoute>} /><Route path="/admin/destinations" element={<ProtectedRoute><AdminDashboard /></ProtectedRoute>} /><Route path="/about" element={<About />} /><Route path="*" element={<Navigate to="/" replace />} /></Routes>;
 }
 
 export default App;
