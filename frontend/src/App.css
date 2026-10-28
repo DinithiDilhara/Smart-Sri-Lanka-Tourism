@@ -465,7 +465,7 @@ h1 em, h2 em { font-family: Georgia, serif; font-weight: 400; }
   .landing-hero h1 span, .landing-main-photo img, .landing-featured-image img { animation: none; transition: none; }
 }
 
-/* COUNTRIES PAGE â€” SCOPED STYLES */
+/* COUNTRIES PAGE — SCOPED STYLES */
 
 .countries-page {
   min-height: 100vh;
