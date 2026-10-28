@@ -6,6 +6,7 @@ import {
   normalizeSlug
 } from "../data/destinationImages";
 import { getDestinations } from "../services/destinationService";
+import BrandLogo from "./BrandLogo";
 import ImagePlaceholder from "./ImagePlaceholder";
 
 // Keep the original country photography, descriptions, and order.
@@ -82,19 +83,6 @@ function useDatabaseDestinations() {
   return { records, loading, error };
 }
 
-function CompassMark() {
-  return <span className="brand-mark" aria-hidden="true"><span /><span /></span>;
-}
-
-function HomeWordmark() {
-  return (
-    <Link className="countries-wordmark" to="/" aria-label="Explore World home">
-      <CompassMark />
-      <span>Explore <strong>World</strong></span>
-    </Link>
-  );
-}
-
 function CountryList({ countries, loading, error }) {
   const [activeIndex, setActiveIndex] = useState(2);
   const count = countries.length;
@@ -114,7 +102,7 @@ function CountryList({ countries, loading, error }) {
 
   return (
     <main className="countries-page">
-      <div className="countries-topbar"><HomeWordmark /></div>
+      <div className="countries-topbar"><BrandLogo /></div>
       <header className="countries-header">
         <p className="eyebrow">Choose your horizon</p>
         <h1>Explore countries</h1>
@@ -128,7 +116,12 @@ function CountryList({ countries, loading, error }) {
           aria-label="Previous countries"><span aria-hidden="true">←</span></button>
         <div className="country-grid">
           {visibleCountries.map(({ country, position }) => (
-            <article className={`country-card country-card-${position}`} key={country.slug}>
+            <Link
+              className={`country-card country-card-${position}`}
+              key={country.slug}
+              to={`/countries/${country.slug}`}
+              aria-label={`Explore ${country.name}`}
+            >
               <div className="country-image">
                 {country.image ? <img src={country.image} alt={country.alt} loading="lazy" /> : <ImagePlaceholder />}
                 <div className="country-card-shade" />
@@ -138,11 +131,8 @@ function CountryList({ countries, loading, error }) {
               </div>
               <div className="country-card-content">
                 <span>{country.region}</span><h2>{country.name}</h2><p>{country.tagline}</p>
-                <Link className="country-explore-button" to={`/countries/${country.slug}`}>
-                  Explore <span aria-hidden="true">↗</span>
-                </Link>
               </div>
-            </article>
+            </Link>
           ))}
         </div>
         <button className="country-carousel-arrow country-carousel-arrow-right"
@@ -192,7 +182,7 @@ function CountryDestinations({ countries, records, loading, error }) {
 
   return (
     <main className="country-placeholder-page">
-      <div className="countries-topbar"><HomeWordmark /></div>
+      <div className="countries-topbar"><BrandLogo /></div>
       <header className="countries-header">
         <p className="eyebrow">{country.region}</p>
         <h1>{country.name}</h1>

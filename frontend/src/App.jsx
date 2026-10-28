@@ -127,7 +127,7 @@ function Logo() {
   return <Link className="brand" to="/"><span className="brand-symbol">⌁</span><span>Explore <b>World</b><small>Global Destination Explorer</small></span></Link>;
 }
 
-function Header({ admin = false }) {
+function Header({ admin = false, showSearch = true, showAdminLinks = true }) {
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -150,9 +150,9 @@ function Header({ admin = false }) {
         <Link to="/about">About</Link>
       </nav>
       <div className="header-actions">
-        <button type="button" aria-label="Search">⌕</button>
-        <Link to="/admin/destinations" aria-label="Admin dashboard">◉</Link>
-        <Link className="profile-dot" to="/admin/destinations">A</Link>
+        {showSearch && <button type="button" aria-label="Search">⌕</button>}
+        {showAdminLinks && <Link to="/admin/destinations" aria-label="Admin dashboard">◉</Link>}
+        {showAdminLinks && <Link className="profile-dot" to="/admin/destinations">A</Link>}
         {admin && <button className="logout-button" type="button" onClick={handleLogout}>Log out</button>}
       </div>
     </header>
@@ -382,6 +382,7 @@ function DestinationDetails() {
 
 function Login() {
   const navigate = useNavigate();
+  const location = useLocation();
   const [form, setForm] = useState({ email: "", password: "" });
   const [status, setStatus] = useState({ loading: false, error: "" });
 
@@ -390,7 +391,8 @@ function Login() {
     setStatus({ loading: true, error: "" });
     try {
       const { user } = await login(form);
-      navigate(user?.role === "admin" ? "/admin" : "/");
+      const returnPath = location.state?.from?.pathname || "/";
+      navigate(location.state?.from ? returnPath : user?.role === "admin" ? "/admin" : "/");
     } catch (error) {
       setStatus({ loading: false, error: error.message });
     }
@@ -417,7 +419,7 @@ function Login() {
           <button className="lime-button" type="submit" disabled={status.loading}>{status.loading ? "Signing in..." : "Sign in"}</button>
         </form>
         {status.error && <p className="auth-notice" role="alert">{status.error}</p>}
-        <p className="auth-account-link">New here? <Link to="/signup">Create an account</Link></p>
+        <p className="auth-account-link">New here? <Link to="/signup" state={location.state}>Create an account</Link></p>
         <Link className="auth-back-link" to="/">← Back to Explore World</Link>
       </div>
     </main>
@@ -426,6 +428,7 @@ function Login() {
 
 function Signup() {
   const navigate = useNavigate();
+  const location = useLocation();
   const [form, setForm] = useState({ name: "", email: "", password: "" });
   const [status, setStatus] = useState({ loading: false, error: "" });
 
@@ -434,7 +437,8 @@ function Signup() {
     setStatus({ loading: true, error: "" });
     try {
       const { user } = await signup(form);
-      navigate(user?.role === "admin" ? "/admin" : "/");
+      const returnPath = location.state?.from?.pathname || "/";
+      navigate(location.state?.from ? returnPath : user?.role === "admin" ? "/admin" : "/");
     } catch (error) {
       setStatus({ loading: false, error: error.message });
     }
@@ -483,12 +487,27 @@ function ProtectedRoute({ children }) {
   return children;
 }
 
+function AuthenticatedRoute({ children }) {
+  const location = useLocation();
+  const [state, setState] = useState({ loading: true, user: null });
+
+  useEffect(() => {
+    getCurrentUser()
+      .then(({ user }) => setState({ loading: false, user }))
+      .catch(() => setState({ loading: false, user: null }));
+  }, []);
+
+  if (state.loading) return <main className="auth-page"><p>Checking your session...</p></main>;
+  if (!state.user) return <Navigate to="/login" replace state={{ from: location }} />;
+  return children;
+}
+
 function About() {
-  return <main className="app-shell"><Header /><section className="simple-page content-width"><p className="kicker">About Explore World</p><h1>Go further.<br /><em>Feel more.</em></h1><p>Explore World connects curious travelers with meaningful places, thoughtful guides and journeys that stay with you long after you return home.</p><Link className="lime-button" to="/countries">Start exploring →</Link></section></main>;
+  return <main className="app-shell"><Header showSearch={false} showAdminLinks={false} /><section className="simple-page content-width"><p className="kicker">About Explore World</p><h1>Go further.<br /><em>Feel more.</em></h1><p>Explore World connects curious travelers with meaningful places, thoughtful guides and journeys that stay with you long after you return home.</p><Link className="lime-button" to="/countries">Start exploring →</Link></section></main>;
 }
 
 function App() {
-  return <Routes><Route path="/" element={<Homepage />} /><Route path="/login" element={<Login />} /><Route path="/signup" element={<Signup />} /><Route path="/countries" element={<Countries />} /><Route path="/countries/:countrySlug" element={<CountryDestinations />} /><Route path="/destinations" element={<AllDestinations />} /><Route path="/destinations/:destinationId" element={<DestinationDetails />} /><Route path="/hotels" element={<Hotels />} /><Route path="/admin" element={<ProtectedRoute><AdminDashboard /></ProtectedRoute>} /><Route path="/admin/destinations" element={<ProtectedRoute><AdminDashboard /></ProtectedRoute>} /><Route path="/about" element={<About />} /><Route path="*" element={<Navigate to="/" replace />} /></Routes>;
+  return <Routes><Route path="/" element={<Homepage />} /><Route path="/login" element={<Login />} /><Route path="/signup" element={<Signup />} /><Route path="/countries" element={<Countries />} /><Route path="/countries/:countrySlug" element={<CountryDestinations />} /><Route path="/destinations" element={<AllDestinations />} /><Route path="/destinations/:destinationId" element={<DestinationDetails />} /><Route path="/hotels" element={<AuthenticatedRoute><Hotels /></AuthenticatedRoute>} /><Route path="/admin" element={<ProtectedRoute><AdminDashboard /></ProtectedRoute>} /><Route path="/admin/destinations" element={<ProtectedRoute><AdminDashboard /></ProtectedRoute>} /><Route path="/about" element={<About />} /><Route path="*" element={<Navigate to="/" replace />} /></Routes>;
 }
 
 export default App;
