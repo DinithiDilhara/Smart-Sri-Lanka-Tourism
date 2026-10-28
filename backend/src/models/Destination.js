@@ -1,5 +1,4 @@
-
-const mongoose = require("mongoose");
+﻿const mongoose = require("mongoose");
 
 const destinationSchema = new mongoose.Schema(
   {
@@ -8,6 +7,17 @@ const destinationSchema = new mongoose.Schema(
       required: true,
       trim: true
     },
+    slug: {
+      type: String,
+      trim: true,
+      lowercase: true
+    },
+    country: {
+      type: String,
+      required: true,
+      trim: true,
+      default: "Sri Lanka"
+    },
     district: {
       type: String,
       required: true,
@@ -15,11 +25,13 @@ const destinationSchema = new mongoose.Schema(
     },
     category: {
       type: String,
-      required: true
+      required: true,
+      trim: true
     },
     description: {
       type: String,
-      required: true
+      required: true,
+      trim: true
     },
     imageUrl: {
       type: String,
@@ -28,5 +40,7 @@ const destinationSchema = new mongoose.Schema(
   },
   { timestamps: true }
 );
+
+destinationSchema.index({ country: 1, slug: 1 });
 
 module.exports = mongoose.model("Destination", destinationSchema);

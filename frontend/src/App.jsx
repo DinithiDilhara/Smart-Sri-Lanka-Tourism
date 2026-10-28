@@ -1,8 +1,9 @@
-import { useEffect, useState } from "react";
+﻿import { useEffect, useState } from "react";
 import { Link, Navigate, Route, Routes, useLocation, useNavigate, useParams } from "react-router-dom";
 import Homepage from "./components/Homepage";
 import Countries from "./components/Countries";
 import { getDestinations } from "./services/destinationService";
+import { useDestinations } from "./hooks/useDestinations";
 import { getCurrentUser, login, logout, signup } from "./services/authService";
 import { countryImage, destinationImages, normalizeSlug } from "./data/destinationImages";
 import ImagePlaceholder from "./components/ImagePlaceholder";
@@ -22,7 +23,7 @@ const destinationDetails = {
     "nine-arch-bridge": { name: "Nine Arch Bridge", category: "Nature", imageKey: "nine-arch-bridge", description: "A scenic bridge surrounded by the lush hills of Ella.", facts: ["Hill country", "Best time Dec - Apr"] },
     sigiriya: { name: "Sigiriya", category: "Heritage", imageKey: "sigiriya", description: "An ancient rock fortress surrounded by gardens, stories and unforgettable views.", facts: ["Heritage site", "Best time Jan - Apr"] },
     galle: { name: "Galle", category: "Beach", imageKey: "galle", description: "A beautifully preserved coastal fort where old-world streets meet the Indian Ocean.", facts: ["Coastal escape", "Best time Nov - Apr"] },
-    mirissa: { name: "Mirissa", category: "Beach", imageKey: "mirissa", description: "A palm-fringed coastal escape on Sri Lanka’s southern shore.", facts: ["Southern coast", "Best time Nov - Apr"] },
+    mirissa: { name: "Mirissa", category: "Beach", imageKey: "mirissa", description: "A palm-fringed coastal escape on Sri Lankaâ€™s southern shore.", facts: ["Southern coast", "Best time Nov - Apr"] },
     "temple-of-tooth-relic": { name: "Temple of the Tooth Relic", category: "Heritage", imageKey: "temple-of-tooth-relic", description: "A major cultural and religious landmark in Kandy.", facts: ["Cultural landmark", "Central Sri Lanka"] }
   },
   india: {
@@ -72,7 +73,7 @@ const hotels = [
   { id: "98-acres-resort", name: "98 Acres Resort & Spa", countrySlug: "sri-lanka", country: "Sri Lanka", destination: "Ella", destinationId: "nine-arch-bridge", price: 165, rating: 4.8, stay: [2, 5], type: "Boutique", description: "An eco-conscious hillside stay surrounded by tea country, close to Ella's walking trails and Nine Arch Bridge.", amenities: ["Mountain view", "Spa", "Restaurant"] },
   { id: "shangri-la-colombo", name: "Shangri-La Colombo", countrySlug: "sri-lanka", country: "Sri Lanka", destination: "Colombo", destinationId: "galle", price: 210, rating: 4.6, stay: [1, 4], type: "Luxury", description: "A modern waterfront base for travelers who want city comforts, dining and a convenient start to a Sri Lankan itinerary.", amenities: ["Waterfront", "Gym", "Airport transfer"] },
   { id: "oberoi-amarvilas", name: "The Oberoi Amarvilas", countrySlug: "india", country: "India", destination: "Agra", destinationId: "taj-mahal", price: 390, rating: 4.9, stay: [1, 3], type: "Luxury", description: "A refined Agra stay with uninterrupted Taj Mahal views, ideal for a short heritage stop.", amenities: ["Taj view", "Pool", "Fine dining"] },
-  { id: "seashell-beach-suites", name: "Seashell Beach Suites", countrySlug: "india", country: "India", destination: "Goa", destinationId: "goa", price: 95, rating: 4.4, stay: [3, 10], type: "Beach", description: "Relaxed suites near North Goa beaches with space for longer stays and easy access to local cafés.", amenities: ["Beach nearby", "Kitchenette", "Pool"] },
+  { id: "seashell-beach-suites", name: "Seashell Beach Suites", countrySlug: "india", country: "India", destination: "Goa", destinationId: "goa", price: 95, rating: 4.4, stay: [3, 10], type: "Beach", description: "Relaxed suites near North Goa beaches with space for longer stays and easy access to local cafÃ©s.", amenities: ["Beach nearby", "Kitchenette", "Pool"] },
   { id: "the-leela-palace-jaipur", name: "The Leela Palace Jaipur", countrySlug: "india", country: "India", destination: "Jaipur", destinationId: "hawa-mahal", price: 245, rating: 4.8, stay: [2, 5], type: "Luxury", description: "A calm palace-style base for exploring Jaipur's forts, markets and historic architecture.", amenities: ["Garden", "Pool", "Spa"] },
   { id: "hotel-barahi-kathmandu", name: "Hotel Barahi Kathmandu", countrySlug: "nepal", country: "Nepal", destination: "Kathmandu", destinationId: "kathmandu-boudhanath-stupa", price: 78, rating: 4.3, stay: [2, 6], type: "City stay", description: "A comfortable city hotel for cultural explorers visiting Kathmandu's temples and UNESCO heritage sites.", amenities: ["Central location", "Breakfast", "Airport transfer"] },
   { id: "temple-tree-resort", name: "Temple Tree Resort & Spa", countrySlug: "nepal", country: "Nepal", destination: "Pokhara", destinationId: "phewa-lake-serenity", price: 115, rating: 4.6, stay: [2, 8], type: "Boutique", description: "A garden resort near Phewa Lake, suited to slow mornings, mountain views and short adventure breaks.", amenities: ["Garden", "Pool", "Spa"] },
@@ -104,7 +105,7 @@ const hotelOfficialDetails = {
 };
 
 function Logo() {
-  return <Link className="brand" to="/"><span className="brand-symbol">⌁</span><span>Explore <b>World</b><small>Global Destination Explorer</small></span></Link>;
+  return <Link className="brand" to="/"><span className="brand-symbol">âŒ</span><span>Explore <b>World</b><small>Global Destination Explorer</small></span></Link>;
 }
 
 function Header({ admin = false }) {
@@ -130,8 +131,8 @@ function Header({ admin = false }) {
         <Link to="/about">About</Link>
       </nav>
       <div className="header-actions">
-        <button type="button" aria-label="Search">⌕</button>
-        <Link to="/admin/destinations" aria-label="Admin dashboard">◉</Link>
+        <button type="button" aria-label="Search">âŒ•</button>
+        <Link to="/admin/destinations" aria-label="Admin dashboard">â—‰</Link>
         <Link className="profile-dot" to="/admin/destinations">A</Link>
         {admin && <button className="logout-button" type="button" onClick={handleLogout}>Log out</button>}
       </div>
@@ -142,8 +143,8 @@ function Header({ admin = false }) {
 function DestinationCard({ destination }) {
   return (
     <Link className="destination-tile" to={`/destinations/${destination.id}`}>
-      <div className="tile-image">{destination.image ? <img src={destination.image} alt={`${destination.name} destination`} /> : <ImagePlaceholder />}<span className="heart">♡</span></div>
-      <div className="tile-copy"><span>{destination.country} · {destination.category}</span><h3>{destination.name}</h3><small>Explore destination <b>→</b></small></div>
+      <div className="tile-image">{destination.image ? <img src={destination.image} alt={`${destination.name} destination`} /> : <ImagePlaceholder />}<span className="heart">â™¡</span></div>
+      <div className="tile-copy"><span>{destination.country} Â· {destination.category}</span><h3>{destination.name}</h3><small>Explore destination <b>â†’</b></small></div>
     </Link>
   );
 }
@@ -154,10 +155,10 @@ function HotelCard({ hotel }) {
     <article className="hotel-card">
       <div className="hotel-card-brand"><span className="hotel-brand-mark">{official.brand}</span><span className="hotel-type">{hotel.type}</span><span className="hotel-official-label">Official property</span></div>
       <div className="hotel-card-copy">
-        <div className="hotel-card-heading"><div><p>{hotel.destination} · {hotel.country}</p><h2>{hotel.name}</h2></div><strong>★ {hotel.rating}</strong></div>
+        <div className="hotel-card-heading"><div><p>{hotel.destination} Â· {hotel.country}</p><h2>{hotel.name}</h2></div><strong>â˜… {hotel.rating}</strong></div>
         <p className="hotel-description">{hotel.description}</p>
         <div className="hotel-amenities">{hotel.amenities.map((amenity) => <span key={amenity}>{amenity}</span>)}</div>
-        <div className="hotel-card-footer"><span>Guide price from <b>${hotel.price}</b> / night</span><div><a href={official.url} target="_blank" rel="noreferrer">Official details ↗</a><Link to={`/destinations/${hotel.destinationId}`}>Explore area</Link></div></div>
+        <div className="hotel-card-footer"><span>Guide price from <b>${hotel.price}</b> / night</span><div><a href={official.url} target="_blank" rel="noreferrer">Official details â†—</a><Link to={`/destinations/${hotel.destinationId}`}>Explore area</Link></div></div>
       </div>
     </article>
   );
@@ -230,6 +231,11 @@ function DestinationFilters({ activeCategory, onChange }) {
 function CountryDestinations() {
   const { countrySlug } = useParams();
   const [activeCategory, setActiveCategory] = useState("All");
+  const {
+    destinations: databaseDestinations,
+    loading,
+    error
+  } = useDestinations();
   const country = countries.find((item) => item.slug === normalizeSlug(countrySlug));
 
   if (!country) {
@@ -237,12 +243,12 @@ function CountryDestinations() {
       <main className="country-placeholder-page">
         <p className="eyebrow">Unknown country</p>
         <h1>That journey is not on the map yet.</h1>
-        <Link className="primary-button" to="/countries">Return to countries ↗</Link>
+        <Link className="primary-button" to="/countries">Return to countries â†—</Link>
       </main>
     );
   }
 
-  const countryDestinations = destinations.filter((item) => item.countrySlug === country.slug);
+  const countryDestinations = databaseDestinations.filter((item) => item.countrySlug === country.slug);
   const filteredDestinations = countryDestinations.filter(
     (item) => activeCategory === "All" || item.category === activeCategory
   );
@@ -264,12 +270,14 @@ function CountryDestinations() {
         </div>
       </section>
       <DestinationFilters activeCategory={activeCategory} onChange={setActiveCategory} />
+      {loading && <p className="content-width" role="status">Loading destinations...</p>}
+      {error && <p className="content-width auth-notice" role="alert">{error}</p>}
       <section className="content-width destination-grid country-results" aria-live="polite">
         {filteredDestinations.map((destination) => (
           <DestinationCard key={`${destination.countrySlug}-${destination.id}`} destination={destination} />
         ))}
       </section>
-      {filteredDestinations.length === 0 && (
+      {!loading && !error && filteredDestinations.length === 0 && (
         <p className="content-width">No destinations match this category in {country.name}.</p>
       )}
     </main>
@@ -279,7 +287,12 @@ function CountryDestinations() {
 function AllDestinations() {
   const [activeCategory, setActiveCategory] = useState("All");
   const [selectedCountry, setSelectedCountry] = useState("all");
-  const filteredDestinations = destinations.filter((item) =>
+  const {
+    destinations: databaseDestinations,
+    loading,
+    error
+  } = useDestinations();
+  const filteredDestinations = databaseDestinations.filter((item) =>
     (selectedCountry === "all" || item.countrySlug === selectedCountry) &&
     (activeCategory === "All" || item.category === activeCategory)
   );
@@ -309,12 +322,14 @@ function AllDestinations() {
         </select>
       </div>
       <DestinationFilters activeCategory={activeCategory} onChange={setActiveCategory} />
+      {loading && <p className="content-width" role="status">Loading destinations...</p>}
+      {error && <p className="content-width auth-notice" role="alert">{error}</p>}
       <section className="content-width destination-grid country-results" aria-live="polite">
         {filteredDestinations.map((destination) => (
           <DestinationCard key={`${destination.countrySlug}-${destination.id}`} destination={destination} />
         ))}
       </section>
-      {filteredDestinations.length === 0 && (
+      {!loading && !error && filteredDestinations.length === 0 && (
         <p className="content-width">No destinations match these filters.</p>
       )}
     </main>
@@ -323,9 +338,22 @@ function AllDestinations() {
 
 function DestinationDetails() {
   const { destinationId } = useParams();
-  const destination = destinations.find((item) => item.id === normalizeSlug(destinationId));
-  if (!destination) return <main className="country-placeholder-page"><p className="eyebrow">Unknown destination</p><h1>That destination is not on the map yet.</h1><Link className="primary-button" to="/countries">Return to countries <span aria-hidden="true">↗</span></Link></main>;
-  return <main className="app-shell"><Header /><section className="detail-hero" style={destination.image ? { backgroundImage: `linear-gradient(90deg, rgba(1, 38, 35, .88), rgba(1, 38, 35, .1)), url(${destination.image})` } : undefined}><div><p className="kicker">{destination.country}</p><h1>{destination.name}</h1><p>{destination.description}</p><div className="detail-actions"><button className="lime-button" type="button">Add to plan ♡</button><button className="ghost-button" type="button">View on map ↗</button></div></div></section><section className="fact-row content-width">{destination.facts.map((fact) => <div key={fact}><span>◷</span><b>{fact.split(" ").slice(0, 2).join(" ")}</b><small>{fact}</small></div>)}</section><section className="content-width detail-content"><div><p className="kicker">Discover {destination.name}</p><h2>A journey worth<br /><em>remembering.</em></h2><p>{destination.description}</p></div><div className="detail-gallery">{destination.image ? <img src={destination.image} alt={`${destination.name} landscape`} /> : <ImagePlaceholder />}</div></section></main>;
+  const {
+    destinations: databaseDestinations,
+    loading,
+    error
+  } = useDestinations();
+  const destination = databaseDestinations.find(
+    (item) => item.slug === normalizeSlug(destinationId)
+  );
+  if (loading) {
+    return <main className="country-placeholder-page"><p className="eyebrow">Explore World</p><h1>Loading destination...</h1></main>;
+  }
+  if (error) {
+    return <main className="country-placeholder-page"><p className="eyebrow">Unable to load destination</p><h1>{error}</h1><Link className="primary-button" to="/destinations">Return to destinations</Link></main>;
+  }
+  if (!destination) return <main className="country-placeholder-page"><p className="eyebrow">Unknown destination</p><h1>That destination is not on the map yet.</h1><Link className="primary-button" to="/countries">Return to countries <span aria-hidden="true">â†—</span></Link></main>;
+  return <main className="app-shell"><Header /><section className="detail-hero" style={destination.image ? { backgroundImage: `linear-gradient(90deg, rgba(1, 38, 35, .88), rgba(1, 38, 35, .1)), url(${destination.image})` } : undefined}><div><p className="kicker">{destination.country}</p><h1>{destination.name}</h1><p>{destination.description}</p><div className="detail-actions"><button className="lime-button" type="button">Add to plan â™¡</button><button className="ghost-button" type="button">View on map â†—</button></div></div></section><section className="fact-row content-width">{destination.facts.map((fact) => <div key={fact}><span>â—·</span><b>{fact.split(" ").slice(0, 2).join(" ")}</b><small>{fact}</small></div>)}</section><section className="content-width detail-content"><div><p className="kicker">Discover {destination.name}</p><h2>A journey worth<br /><em>remembering.</em></h2><p>{destination.description}</p></div><div className="detail-gallery">{destination.image ? <img src={destination.image} alt={`${destination.name} landscape`} /> : <ImagePlaceholder />}</div></section></main>;
 }
 
 function Login() {
@@ -351,7 +379,7 @@ function Login() {
     >
       <div className="auth-panel">
         <Link className="auth-wordmark" to="/" aria-label="Explore World home">
-          <span className="brand-symbol">⌁</span>
+          <span className="brand-symbol">âŒ</span>
           <span>Explore <b>World</b></span>
         </Link>
         <p className="kicker">Welcome back</p>
@@ -366,7 +394,7 @@ function Login() {
         </form>
         {status.error && <p className="auth-notice" role="alert">{status.error}</p>}
         <p className="auth-account-link">New here? <Link to="/signup">Create an account</Link></p>
-        <Link className="auth-back-link" to="/">← Back to Explore World</Link>
+        <Link className="auth-back-link" to="/">â† Back to Explore World</Link>
       </div>
     </main>
   );
@@ -392,7 +420,7 @@ function Signup() {
     <main className="auth-page" style={{ "--auth-background-image": `url(${galleImage})` }}>
       <div className="auth-panel">
         <Link className="auth-wordmark" to="/" aria-label="Explore World home">
-          <span className="brand-symbol">⌁</span>
+          <span className="brand-symbol">âŒ</span>
           <span>Explore <b>World</b></span>
         </Link>
         <p className="kicker">Begin your journey</p>
@@ -409,7 +437,7 @@ function Signup() {
         </form>
         {status.error && <p className="auth-notice" role="alert">{status.error}</p>}
         <p className="auth-account-link">Already registered? <Link to="/login">Sign in</Link></p>
-        <Link className="auth-back-link" to="/">← Back to Explore World</Link>
+        <Link className="auth-back-link" to="/">â† Back to Explore World</Link>
       </div>
     </main>
   );
@@ -435,11 +463,11 @@ function Admin() {
   const [rows, setRows] = useState(destinations);
   const [loading, setLoading] = useState(false);
   useEffect(() => { getDestinations().then((data) => { if (data.length) setRows(data); }).catch(() => {}).finally(() => setLoading(false)); }, []);
-  return <main className="admin-shell"><Header admin /><div className="admin-layout"><aside className="admin-sidebar"><p>WORKSPACE</p>{["Dashboard", "Destinations", "Add Destination", "Manage Destinations", "Countries", "Users", "Settings"].map((item) => <Link className={item === "Manage Destinations" ? "selected" : ""} to={item === "Countries" ? "/countries" : "/admin/destinations"} key={item}><span>◈</span>{item}</Link>)}</aside><section className="admin-content"><div className="admin-heading"><div><p className="kicker">Admin workspace</p><h1>Manage Destinations</h1></div><Link className="lime-button" to="/admin/destinations">＋ Add Destination</Link></div><div className="admin-table"><div className="table-head"><span>#</span><span>Image</span><span>Destination</span><span>Country</span><span>Category</span><span>Actions</span></div>{rows.map((row, index) => <div className="table-row" key={row.id || row._id}><span>{index + 1}</span>{row.image || row.imageUrl ? <img src={row.image || row.imageUrl} alt="" /> : <ImagePlaceholder />}<b>{row.name}</b><span>{row.country || row.district || "Country unavailable"}</span><span>{row.category}</span><span className="row-actions">✎ / ♧</span></div>)}</div>{loading && <p>Loading destinations...</p>}</section></div></main>;
+  return <main className="admin-shell"><Header admin /><div className="admin-layout"><aside className="admin-sidebar"><p>WORKSPACE</p>{["Dashboard", "Destinations", "Add Destination", "Manage Destinations", "Countries", "Users", "Settings"].map((item) => <Link className={item === "Manage Destinations" ? "selected" : ""} to={item === "Countries" ? "/countries" : "/admin/destinations"} key={item}><span>â—ˆ</span>{item}</Link>)}</aside><section className="admin-content"><div className="admin-heading"><div><p className="kicker">Admin workspace</p><h1>Manage Destinations</h1></div><Link className="lime-button" to="/admin/destinations">ï¼‹ Add Destination</Link></div><div className="admin-table"><div className="table-head"><span>#</span><span>Image</span><span>Destination</span><span>Country</span><span>Category</span><span>Actions</span></div>{rows.map((row, index) => <div className="table-row" key={row.id || row._id}><span>{index + 1}</span>{row.image || row.imageUrl ? <img src={row.image || row.imageUrl} alt="" /> : <ImagePlaceholder />}<b>{row.name}</b><span>{row.country || row.district || "Country unavailable"}</span><span>{row.category}</span><span className="row-actions">âœŽ / â™§</span></div>)}</div>{loading && <p>Loading destinations...</p>}</section></div></main>;
 }
 
 function About() {
-  return <main className="app-shell"><Header /><section className="simple-page content-width"><p className="kicker">About Explore World</p><h1>Go further.<br /><em>Feel more.</em></h1><p>Explore World connects curious travelers with meaningful places, thoughtful guides and journeys that stay with you long after you return home.</p><Link className="lime-button" to="/countries">Start exploring →</Link></section></main>;
+  return <main className="app-shell"><Header /><section className="simple-page content-width"><p className="kicker">About Explore World</p><h1>Go further.<br /><em>Feel more.</em></h1><p>Explore World connects curious travelers with meaningful places, thoughtful guides and journeys that stay with you long after you return home.</p><Link className="lime-button" to="/countries">Start exploring â†’</Link></section></main>;
 }
 
 function App() {
