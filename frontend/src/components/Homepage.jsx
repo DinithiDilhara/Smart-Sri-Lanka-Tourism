@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
+import SiteNavbar from "./SiteNavbar";
 import sigiriyaImage from "../assets/destinations/srilanka/sigiriya.jpg";
 import galleImage from "../assets/destinations/srilanka/galle.jpg";
 import mirissaImage from "../assets/destinations/srilanka/mirissa.jpg";
@@ -44,15 +45,6 @@ const featuredDestinations = [
   { name: "Taj Mahal", location: "India", image: tajMahalImage, to: "/destinations/taj-mahal" }
 ];
 
-function CompassMark() {
-  return (
-    <span className="landing-mark" aria-hidden="true">
-      <span />
-      <span />
-    </span>
-  );
-}
-
 function Homepage() {
   const [activeIndex, setActiveIndex] = useState(0);
   const [isCarouselPaused, setIsCarouselPaused] = useState(false);
@@ -90,23 +82,7 @@ function Homepage() {
 
   return (
     <main className="landing-page">
-      <header className="landing-nav">
-        <Link className="landing-wordmark" to="/" aria-label="Explore World home">
-          <CompassMark />
-          <span>Explore <strong>World</strong></span>
-        </Link>
-
-        <nav className="landing-links" aria-label="Main navigation">
-          <Link className="is-current" to="/">Home</Link>
-          <Link to="/destinations">Explore</Link>
-          <Link to="/countries">Destinations</Link>
-          <Link to="/about">About</Link>
-        </nav>
-
-        <div className="landing-actions">
-          <Link className="landing-login" to="/login">Login</Link>
-        </div>
-      </header>
+      <SiteNavbar />
 
       <section className="landing-hero">
         <div className="landing-hero-copy landing-reveal">
@@ -117,7 +93,7 @@ function Homepage() {
             stay with you long after you return home.
           </p>
           <div className="landing-hero-actions">
-            <Link className="landing-primary-button" to="/countries">
+            <Link className="landing-primary-button" to="/explore">
               Start Exploring
             </Link>
           </div>
@@ -168,7 +144,7 @@ function Homepage() {
             <p className="landing-eyebrow">Featured destinations</p>
             <h2 id="featured-heading">Inspiring places <em>around the world.</em></h2>
           </div>
-          <Link className="landing-text-link" to="/countries">View all destinations <span aria-hidden="true">↗</span></Link>
+          <Link className="landing-text-link" to="/destinations">View all destinations <span aria-hidden="true">↗</span></Link>
         </div>
         <div className="landing-featured-grid">
           {featuredDestinations.map((destination) => (

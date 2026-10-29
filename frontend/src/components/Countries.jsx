@@ -6,7 +6,7 @@ import {
   normalizeSlug
 } from "../data/destinationImages";
 import { getDestinations } from "../services/destinationService";
-import BrandLogo from "./BrandLogo";
+import SiteNavbar from "./SiteNavbar";
 import ImagePlaceholder from "./ImagePlaceholder";
 
 // Keep the original country photography, descriptions, and order.
@@ -102,11 +102,12 @@ function CountryList({ countries, loading, error }) {
 
   return (
     <main className="countries-page">
-      <div className="countries-topbar"><BrandLogo /></div>
+      <SiteNavbar />
       <header className="countries-header">
         <p className="eyebrow">Choose your horizon</p>
         <h1>Explore countries</h1>
         <p>Begin with a place that stays with you long after the journey ends.</p>
+        <Link className="landing-text-link" to="/destinations">Browse all destinations ↗</Link>
       </header>
       {error && <p role="status" className="countries-data-notice">{error}</p>}
       {loading && <p className="countries-data-notice">Loading new countries…</p>}
@@ -170,16 +171,17 @@ function CountryDestinations({ countries, records, loading, error }) {
     if (loading) return <main className="country-placeholder-page"><p>Loading country…</p></main>;
     return (
       <main className="country-placeholder-page">
+        <SiteNavbar />
         <p className="eyebrow">Unknown destination</p>
         <h1>That journey is not on the map yet.</h1>
-        <Link className="primary-button" to="/countries">Return to countries ↗</Link>
+        <Link className="primary-button" to="/explore">Return to Explore ↗</Link>
       </main>
     );
   }
 
   return (
     <main className="country-placeholder-page">
-      <div className="countries-topbar"><BrandLogo /></div>
+      <SiteNavbar />
       <header className="countries-header">
         <p className="eyebrow">{country.region}</p>
         <h1>{country.name}</h1>
@@ -203,7 +205,7 @@ function CountryDestinations({ countries, records, loading, error }) {
           ))}
         </div>
       </section>
-      <Link className="primary-button" to="/countries">← Explore other countries</Link>
+      <Link className="primary-button" to="/explore">← Explore other countries</Link>
     </main>
   );
 }

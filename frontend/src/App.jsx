@@ -3,10 +3,14 @@ import { Link, Navigate, Route, Routes, useLocation, useNavigate, useParams } fr
 import Homepage from "./components/Homepage";
 import Countries from "./components/Countries";
 import { useDestinations } from "./hooks/useDestinations";
-import { getCurrentUser, login, logout, signup } from "./services/authService";
+import { getCurrentUser, login, signup } from "./services/authService";
 import { countryImage, destinationImages, normalizeSlug } from "./data/destinationImages";
 import ImagePlaceholder from "./components/ImagePlaceholder";
 import AdminDashboard from "./components/AdminDashboard";
+import SiteNavbar from "./components/SiteNavbar";
+import FavoritesPage from "./pages/FavoritesPage";
+import MyTripsPage from "./pages/MyTripsPage";
+import ProfilePage from "./pages/ProfilePage";
 import galleImage from "./assets/destinations/srilanka/galle.jpg";
 import "./App.css";
 
@@ -123,40 +127,9 @@ const hotelOfficialDetails = {
   "the-siam-bangkok": { brand: "TS", url: "https://www.thesiamhotel.com/" }
 };
 
-function Logo() {
-  return <Link className="brand" to="/"><span className="brand-symbol">⌁</span><span>Explore <b>World</b><small>Global Destination Explorer</small></span></Link>;
-}
-
-function Header({ admin = false, showSearch = false, showAdminLinks = false }) {
-  const navigate = useNavigate();
-  const location = useLocation();
-
-  async function handleLogout() {
-    try {
-      await logout();
-    } finally {
-      navigate("/login");
-    }
-  }
-
-  return (
-    <header className={`topbar ${admin ? "topbar-admin" : ""}`}>
-      <Logo />
-      <nav className="main-nav" aria-label="Main navigation">
-        <Link to="/">Home</Link>
-        <Link to="/countries">Countries</Link>
-        <Link to="/destinations">Destinations</Link>
-        <Link className={location.pathname === "/hotels" ? "active" : ""} to="/hotels">Hotels</Link>
-        <Link to="/about">About</Link>
-      </nav>
-      <div className="header-actions">
-        {showSearch && <button type="button" aria-label="Search">⌕</button>}
-        {showAdminLinks && <Link to="/admin/destinations" aria-label="Admin dashboard">◉</Link>}
-        {showAdminLinks && <Link className="profile-dot" to="/admin/destinations">A</Link>}
-        {admin && <button className="logout-button" type="button" onClick={handleLogout}>Log out</button>}
-      </div>
-    </header>
-  );
+// Reuse the same public navigation on all non-admin pages.
+function Header() {
+  return <SiteNavbar />;
 }
 
 function DestinationCard({ destination }) {
@@ -507,7 +480,29 @@ function About() {
 }
 
 function App() {
-  return <Routes><Route path="/" element={<Homepage />} /><Route path="/login" element={<Login />} /><Route path="/signup" element={<Signup />} /><Route path="/countries" element={<Countries />} /><Route path="/countries/:countrySlug" element={<CountryDestinations />} /><Route path="/destinations" element={<AllDestinations />} /><Route path="/destinations/:destinationId" element={<DestinationDetails />} /><Route path="/hotels" element={<AuthenticatedRoute><Hotels /></AuthenticatedRoute>} /><Route path="/admin" element={<ProtectedRoute><AdminDashboard /></ProtectedRoute>} /><Route path="/admin/destinations" element={<ProtectedRoute><AdminDashboard /></ProtectedRoute>} /><Route path="/about" element={<About />} /><Route path="*" element={<Navigate to="/" replace />} /></Routes>;
+  return (
+    <Routes>
+      <Route path="/" element={<Homepage />} />
+      <Route path="/login" element={<Login />} />
+      <Route path="/signup" element={<Signup />} />
+      {/* Explore combines country selection with navigation into destination details. */}
+      <Route path="/explore" element={<Countries />} />
+      <Route path="/favorites" element={<AuthenticatedRoute><FavoritesPage /></AuthenticatedRoute>} />
+      <Route path="/my-trips" element={<AuthenticatedRoute><MyTripsPage /></AuthenticatedRoute>} />
+      <Route path="/profile" element={<AuthenticatedRoute><ProfilePage /></AuthenticatedRoute>} />
+      {/* Keep existing public URLs so featured cards and old links still work. */}
+      <Route path="/countries" element={<Countries />} />
+      <Route path="/countries/:countrySlug" element={<CountryDestinations />} />
+      <Route path="/destinations" element={<AllDestinations />} />
+      <Route path="/destinations/:destinationId" element={<DestinationDetails />} />
+      {/* Hotel discovery remains available from My Trips while the planner is built. */}
+      <Route path="/hotels" element={<AuthenticatedRoute><Hotels /></AuthenticatedRoute>} />
+      <Route path="/admin" element={<ProtectedRoute><AdminDashboard /></ProtectedRoute>} />
+      <Route path="/admin/destinations" element={<ProtectedRoute><AdminDashboard /></ProtectedRoute>} />
+      <Route path="/about" element={<About />} />
+      <Route path="*" element={<Navigate to="/" replace />} />
+    </Routes>
+  );
 }
 
 export default App;
