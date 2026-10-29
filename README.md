@@ -149,3 +149,8 @@ University of Ruhuna — Faculty of Engineering
 ## Academic Project
 
 Developed as a university mini-project to demonstrate full-stack web development using the MERN stack.
+## Destination Data
+- Added 25 destinations to MongoDB.
+- 5 destinations each for Sri Lanka, India, Nepal, Indonesia, and Thailand.
+- Each destination includes a name, region, category, description, and image.
+- Destination records are stored in MongoDB, not Git.
