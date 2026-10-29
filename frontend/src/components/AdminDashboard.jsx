@@ -188,13 +188,34 @@ function DashboardOverview({ rows, loading, onCreate, onEdit, onView }) {
 function ManageDestinations({ rows, loading, onCreate, onEdit, onView, onDelete, onRefresh }) {
   const [search, setSearch] = useState("");
   const [country, setCountry] = useState("");
+  const [sortOrder, setSortOrder] = useState("name-asc");
   const [page, setPage] = useState(1);
   const countries = useMemo(() => [...new Set(rows.map((row) => row.country).filter(Boolean))].sort(), [rows]);
-  const filtered = useMemo(() => rows.filter((row) => {
+  const filtered = useMemo(() => {
     const query = search.toLowerCase().trim();
-    const text = [row.name, row.country, row.district, row.category].filter(Boolean).join(" ").toLowerCase();
-    return (!query || text.includes(query)) && (!country || row.country === country);
-  }), [rows, country, search]);
+
+    const matches = rows.filter((row) => {
+      const content = [row.name, row.country, row.district, row.category]
+        .filter(Boolean).join(" ").toLowerCase();
+
+      return (!query || content.includes(query)) &&
+        (!country || row.country === country);
+    });
+
+    return matches.sort((a, b) => {
+      const nameComparison = String(a.name || "").localeCompare(
+        String(b.name || ""), undefined, { sensitivity: "base" }
+      );
+
+      if (sortOrder === "name-desc") return -nameComparison;
+      if (sortOrder === "newest")
+        return (Date.parse(b.createdAt) || 0) - (Date.parse(a.createdAt) || 0);
+      if (sortOrder === "oldest")
+        return (Date.parse(a.createdAt) || 0) - (Date.parse(b.createdAt) || 0);
+
+      return nameComparison;
+    });
+  }, [rows, country, search, sortOrder]);
   const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
   const currentPage = Math.min(page, totalPages);
   const pageRows = filtered.slice((currentPage - 1) * PAGE_SIZE, currentPage * PAGE_SIZE);
@@ -212,6 +233,15 @@ function ManageDestinations({ rows, loading, onCreate, onEdit, onView, onDelete,
         <div className="admin-toolbar">
           <label className="admin-search-box"><AdminIcon name="search" /><span className="admin-sr-only">Search destinations</span><input type="search" placeholder="Search destinations…" value={search} onChange={(event) => setSearchAndReset(event.target.value)} /></label>
           <label className="admin-filter-box"><span className="admin-sr-only">Filter by country</span><select value={country} onChange={(event) => setCountryAndReset(event.target.value)}><option value="">All countries</option>{countries.map((item) => <option key={item} value={item}>{item}</option>)}</select></label>
+          <label className="admin-filter-box">
+            <span className="admin-sr-only">Sort destinations</span>
+            <select aria-label="Sort destinations" value={sortOrder} onChange={(event) => { setSortOrder(event.target.value); setPage(1); }}>
+              <option value="name-asc">Name: A-Z</option>
+              <option value="name-desc">Name: Z-A</option>
+              <option value="newest">Newest first</option>
+              <option value="oldest">Oldest first</option>
+            </select>
+          </label>
           <button type="button" className="admin-secondary-button admin-refresh-button" onClick={onRefresh} title="Reload destinations"><AdminIcon name="refresh" /><span>Refresh</span></button>
         </div>
         {loading ? <p className="admin-muted">Loading destinations…</p> : rows.length === 0 ? <EmptyDestinations onCreate={onCreate} /> : filtered.length === 0 ? (
