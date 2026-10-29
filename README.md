@@ -1,113 +1,122 @@
-﻿# Explore World — Global Destination Explorer
+# Explore World — Global Destination Explorer
 
-A modern full-stack tourism web application developed using the MERN stack (MongoDB, Express.js, React.js, and Node.js).
+**Explore World** is a full-stack tourism web application built with MongoDB, Express.js, React, and Node.js (MERN). It helps travelers discover destinations, save favorites, and plan personalized trips. Administrators can manage destinations through a protected dashboard.
 
-Explore World allows users to discover tourist destinations across five Asian countries through an interactive, image-rich interface.
+This project was developed as a university mini-project by **W.P.D.D. Withanapathirana**, Faculty of Engineering, University of Ruhuna.
 
-## Project Overview
+## Main features
 
-Explore World is designed to make destination discovery simple and engaging. Users can explore countries, browse tourist attractions, view destination details, and discover hotel information.
+- **Explore destinations:** Browse attractions by country and category; view photos and destination details.
+- **Search, filter, and sort:** Find destinations through the exploration pages and use name/date sorting on the admin dashboard.
+- **Destination CRUD:** Administrators can create, list, update, and delete destination records stored in MongoDB.
+- **Authentication:** Register, log in, log out, and access protected user features through an HTTP-only session cookie.
+- **Favorites:** Signed-in users can save or remove destinations; selections are stored in their MongoDB user record.
+- **My Trips:** Create and edit trips, arrange destinations by day, add private custom places, and keep a reusable *My Travel Ideas* draft.
+- **Trip budget:** Choose manual cost entry or automatic estimates based on trip dates, travelers, rooms, hotel nightly rate, and food cost per person per day. Transport and activity estimates are included.
+- **Maps and hotel suggestions:** Open destination locations in Google Maps and browse informational hotel suggestions. **Hotel prices are estimates, not live booking quotes.**
+- **Responsive interface:** React pages styled with CSS for different screen sizes.
 
-The application integrates a React frontend with an Express backend and a MongoDB Atlas database.
+### Featured countries
 
-## Technologies Used
+The seed script provides **25 initial destinations**, five each from Sri Lanka, India, Nepal, Indonesia, and Thailand. Administrators can add further destinations and countries; the actual database count can therefore change.
 
-**Frontend**
-- React.js
-- Vite
-- JavaScript
-- CSS3
-- React Router
+## Technology stack
 
-**Backend**
-- Node.js
-- Express.js
-- MongoDB Atlas
-- Mongoose
-- REST API
+| Layer | Technology |
+| --- | --- |
+| Frontend | React, React Router, JavaScript, CSS, Vite |
+| Backend | Node.js, Express |
+| Database | MongoDB Atlas, Mongoose |
+| Authentication | bcryptjs password hashes, JSON Web Tokens in HTTP-only cookies |
+| Development | Visual Studio Code, Git, GitHub |
 
-**Development Tools**
-- Visual Studio Code
-- Git and GitHub
-- GitHub Copilot
+## How the application works
 
-## Countries and Destinations
+```text
+Browser (React + Vite)
+        |
+        | HTTP requests / JSON
+        v
+Express REST API (Node.js)
+        |
+        | Mongoose models
+        v
+MongoDB Atlas (Users, Destinations, Trips)
+```
 
-The application includes 25 tourist destinations across five countries:
+The backend separates route handlers, controllers, authentication middleware, and Mongoose models. The Vite development server proxies `/api` requests to the backend on port 5000. The frontend's API base URL can be configured with `VITE_API_URL` if needed.
 
-| Country | Destinations |
-|---|---|
-| Sri Lanka | Sigiriya, Galle, Mirissa, Nine Arch Bridge, Temple of the Tooth Relic |
-| India | Taj Mahal, Goa, Hawa Mahal, Kerala Backwaters, Varanasi |
-| Nepal | Mount Everest, Annapurna Range, Lumbini, Boudhanath Stupa, Phewa Lake |
-| Indonesia | Mount Bromo, Borobudur Temple, Kelingking Beach, Raja Ampat Islands, Tegallalang Rice Terraces |
-| Thailand | Wat Arun, Doi Suthep, Railay Beach, Phi Phi Islands, Patong Beach |
-
-## Features
-
-- Country browsing and navigation
-- Tourist destination discovery
-- Country and category filtering
-- Individual destination detail pages
-- Local destination image integration
-- Hotel discovery and filtering
-- User registration and login
-- MongoDB Atlas database integration
-- REST API endpoints for destination CRUD operations
-- Role-based authorization for administrator API operations
-- Responsive frontend layouts
-
-## Project Structure
+## Project structure
 
 ```text
 Global-Destination-Explorer/
-├── frontend/
-│   ├── src/
-│   │   ├── assets/
-│   │   ├── components/
-│   │   ├── data/
-│   │   ├── hooks/
-│   │   └── services/
-│   └── package.json
 ├── backend/
+│   ├── scripts/              # Destination seed and administrator setup
 │   ├── src/
-│   │   ├── config/
-│   │   ├── controllers/
-│   │   ├── middleware/
-│   │   ├── models/
-│   │   └── routes/
-│   ├── scripts/
+│   │   ├── config/           # MongoDB connection
+│   │   ├── controllers/      # Authentication and destination operations
+│   │   ├── middleware/       # Authentication, admin checks, origin checks
+│   │   ├── models/           # User, Destination, Trip
+│   │   ├── routes/           # Authentication, destinations, favorites, trips
+│   │   └── server.js
+│   ├── test/                 # Automated backend tests
 │   └── package.json
+├── frontend/
+│   ├── public/               # Public images and icons
+│   ├── src/
+│   │   ├── assets/           # Destination photos
+│   │   ├── components/       # Main UI, navigation, admin dashboard
+│   │   ├── pages/            # Favorites, My Trips, profile
+│   │   ├── data/             # Destination image helpers
+│   │   ├── hooks/            # Destination data hooks
+│   │   └── services/         # API request helpers
+│   └── package.json
+├── docs/
+│   ├── DATABASE_ERD.md       # MongoDB relationships and Mermaid diagram
+│   ├── ExploreWorld_ERD.png  # Diagram for reports
+│   └── ExploreWorld_ERD.svg  # Scalable diagram
 └── README.md
 ```
 
-## How to Run the Project
+## Local installation
 
-**1. Clone the repository**
+You need Git, Node.js/npm compatible with the project's Vite version, and a MongoDB database connection.
+
+**1. Clone and install dependencies**
 
 ```bash
 git clone https://github.com/DinithiDilhara/global-destination-explorer.git
 cd global-destination-explorer
-```
-
-**2. Install backend dependencies**
-
-```bash
 cd backend
 npm install
 ```
 
-Create a `.env` file with your own MongoDB Atlas connection settings and required authentication configuration. Refer to the backend environment configuration.
+**2. Configure the backend**
 
-Start the backend:
+Create `backend/.env` locally. Replace the placeholders with your own values:
+
+```dotenv
+MONGO_URI=mongodb+srv://YOUR_USERNAME:YOUR_PASSWORD@YOUR_CLUSTER/YOUR_DATABASE
+JWT_SECRET=REPLACE_WITH_A_LONG_RANDOM_SECRET
+PORT=5000
+FRONTEND_ORIGINS=http://localhost:5173,http://127.0.0.1:5173
+```
+
+**Never commit `.env`, MongoDB credentials, JWT secrets, or administrator passwords to GitHub.** The root `.gitignore` excludes `.env` files.
+
+**3. Start the backend**
+
+In the `backend` folder:
 
 ```bash
 npm run dev
 ```
 
-**3. Install frontend dependencies**
+The backend defaults to `http://localhost:5000`. Verify it at `http://localhost:5000/api/health` (the response reports database connectivity).
 
-Open another terminal:
+**4. Start the frontend**
+
+Open a *second terminal* in the project root:
 
 ```bash
 cd frontend
@@ -115,42 +124,71 @@ npm install
 npm run dev
 ```
 
-Open the local URL shown by Vite, normally `http://localhost:5173`.
+Open the URL displayed by Vite (usually `http://localhost:5173`). Keep the backend running separately.
 
-## Database Integration
+For local development, the Vite proxy handles `/api` requests. If the backend uses a different host or port, set a suitable `VITE_API_URL` in the frontend environment before starting Vite.
 
-MongoDB Atlas is used to store destination information including destination name, country, district, category, description, and image URL.
+## Database structure and ER diagram
 
-The database has been populated with 25 initial destination records across five countries.
+MongoDB stores data in **three main collections**:
 
-The backend provides destination CRUD API endpoints, with write operations restricted to administrators.
+| Collection | Purpose |
+| --- | --- |
+| `users` | Account information, role, hashed password, and an array of favorite Destination references |
+| `destinations` | Public destination records: name, slug, country, district, category, description, and image URL |
+| `trips` | User-owned trips with dates, destination references, embedded personal stops, hotel details, budget amounts, and optional automatic-calculator settings |
 
-## Testing
+See **[Database ER Diagram](docs/DATABASE_ERD.md)** or use the **[PNG diagram](docs/ExploreWorld_ERD.png)** in your report. The diagram represents MongoDB document references and embedded arrays; it does **not** imply SQL foreign-key constraints.
 
-The project has been checked using:
+## REST API overview
 
-- ESLint for frontend code quality
-- Vite production build
-- Node.js backend tests
-- REST API checks for destination data
+| Method | Endpoint | Access / purpose |
+| --- | --- | --- |
+| GET | `/api/health` | Check backend / database status |
+| GET | `/api/destinations` | Public: list destinations |
+| GET | `/api/destinations/:id` | Public: destination details |
+| POST | `/api/destinations` | Admin: create destination |
+| PUT / PATCH | `/api/destinations/:id` | Admin: update destination |
+| DELETE | `/api/destinations/:id` | Admin: delete destination |
+| POST | `/api/auth/signup` | Register an account |
+| POST | `/api/auth/login` | Log in |
+| POST | `/api/auth/logout` | Log out |
+| GET | `/api/auth/me` | Signed-in account details |
+| GET | `/api/favorites` | Signed-in user's favorites |
+| POST / DELETE | `/api/favorites/:destinationId` | Add / remove favorite |
+| GET / POST | `/api/trips` | List / create user's trips |
+| PATCH / DELETE | `/api/trips/:tripId` | Update / delete owned trip |
+| POST | `/api/trips/ideas` | Add a destination to the user's draft ideas |
+| POST / PATCH / DELETE | `/api/trips/:tripId/destinations/...` | Manage trip destination entries |
+| POST / PATCH / DELETE | `/api/trips/:tripId/custom-stops/...` | Manage personal stops |
 
-## Project Status
+Destination changes require admin authentication. Favorite and trip operations require a logged-in user. Cross-origin state-changing requests are checked against the allowed frontend origins.
 
-The React frontend, Express backend, and MongoDB destination integration are implemented.
+## Testing and verification
 
-Destination browsing, filtering, hotel discovery, and authentication functionality are present. Further work includes completing the administrator management interface and final end-to-end verification.
+Run the frontend production build:
 
-## Developer
+```bash
+cd frontend
+npm run build
+```
 
-**W.P.D.D. Withanapathirana**
+Run backend automated tests:
+
+```bash
+cd backend
+npm test
+```
+
+These checks do not replace manual browser testing. Before submission, verify login/logout, destination create/read/update/delete, sorting and filtering, Favorites persistence, trip editing, budget saving, validation messages, and mobile layout. Do not present estimated hotel costs as real-time prices.
+
+## Optional database setup scripts
+
+- `backend/scripts/seedDestinations.js` inserts missing seed destinations when run with a configured MongoDB connection. Existing matching records are retained.
+- `backend/scripts/create-admin.js` requires `ADMIN_NAME`, `ADMIN_EMAIL`, and `ADMIN_PASSWORD` in the backend environment. **If the email already exists, this script updates that account's role and password**; use it only when intentionally provisioning an administrator. Do not commit these credentials.
+
+## Academic project
 
 University of Ruhuna — Faculty of Engineering
-
-## Academic Project
-
-Developed as a university mini-project to demonstrate full-stack web development using the MERN stack.
-## Destination Data
-- Added 25 destinations to MongoDB.
-- 5 destinations each for Sri Lanka, India, Nepal, Indonesia, and Thailand.
-- Each destination includes a name, region, category, description, and image.
-- Destination records are stored in MongoDB, not Git.
+Developer: W.P.D.D. Withanapathirana
+Project: Explore World (Global Destination Explorer)
