@@ -13,6 +13,7 @@ if (process.env.NODE_ENV !== "production") {
 const connectDB = require("./config/db");
 const destinationRoutes = require("./routes/destinationRoutes");
 const authRoutes = require("./routes/authRoutes");
+const tripRoutes = require("./routes/tripRoutes");
 const favoriteRoutes = require("./routes/favoriteRoutes");
 
 const app = express();
@@ -41,6 +42,7 @@ app.use("/api/destinations", destinationRoutes);
 
 // Authentication endpoints
 app.use("/api/auth", authRoutes);
+app.use("/api/trips", tripRoutes);
 
 // Favorites endpoints
 app.use("/api/favorites", favoriteRoutes);

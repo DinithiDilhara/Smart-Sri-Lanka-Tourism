@@ -1,0 +1,69 @@
+.trip-page { background: #fbfcf9; color: #193b30; min-height: 100vh; }
+.trip-wrap { max-width: 1230px; margin: 0 auto; padding: 54px 28px 110px; }
+.trip-header { display: flex; align-items: end; justify-content: space-between; gap: 22px; margin-bottom: 32px; }
+.trip-header h1 { font-family: "Playfair Display", Georgia, serif; font-size: clamp(3rem, 6vw, 5rem); font-weight: 500; letter-spacing: -.06em; margin: 7px 0 15px; }
+.trip-header h1 em { color: #08794c; }
+.trip-header p:not(.trip-eyebrow) { color: #7b8a81; font-size: .92rem; margin: 0; line-height: 1.6; }
+.trip-eyebrow { font-size: .68rem; letter-spacing: .18em; font-weight: 800; color: #08794c; margin: 0; }
+.trip-outline { padding: 11px 16px; border: 1px solid #cce2d3; border-radius: 10px; color: #08794c; font-weight: 700; font-size: .78rem; white-space: nowrap; }
+.trip-layout { display: grid; grid-template-columns: minmax(250px, 330px) minmax(0, 1fr); align-items: start; gap: 22px; }
+.trip-side, .trip-main { min-width: 0; display: grid; gap: 20px; }
+.trip-panel { padding: 25px; background: white; border: 1px solid #e2ece5; border-radius: 17px; box-shadow: 0 12px 33px rgba(4, 51, 32, .045); }
+.trip-panel h2 { color: #173d30; font-size: 1.27rem; margin: 0 0 17px; font-weight: 750; letter-spacing: -.02em; }
+.trip-panel > p { color: #72857a; font-size: .86rem; line-height: 1.6; }
+.trip-list { display: grid; gap: 8px; }
+.trip-list-item { display: grid; gap: 5px; width: 100%; text-align: left; padding: 14px 15px; border: 1px solid #e1eae3; border-radius: 10px; background: #fafdfa; color: #1c4030; }
+.trip-list-item.is-active { border-color: #9bcfb0; background: #eaf8ed; }
+.trip-list-item strong { font-size: .86rem; }
+.trip-list-item small { color: #799083; font-size: .72rem; }
+.trip-form { display: grid; gap: 15px; }
+.trip-form h2 { margin-bottom: 3px; }
+.trip-form label { display: grid; align-content: start; gap: 7px; color: #244b3b; font-size: .78rem; font-weight: 700; }
+.trip-form input, .trip-form select, .trip-place-actions select { min-width: 0; width: 100%; min-height: 42px; padding: 9px 12px; border: 1px solid #d9e7dd; border-radius: 8px; background: #fff; color: #163c2e; font-size: .82rem; }
+.trip-form input:focus, .trip-form select:focus, .trip-place-actions select:focus { outline: 2px solid #6ab28b; outline-offset: 1px; }
+.trip-form-row { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 14px; }
+.trip-primary { background: #08794c; color: white; border: 0; border-radius: 9px; padding: 12px 18px; font-weight: 800; font-size: .78rem; }
+.trip-primary:hover:not(:disabled) { background: #075d3e; }
+.trip-primary:disabled, .trip-danger:disabled { opacity: .55; cursor: wait; }
+.trip-selected-heading { display: flex; align-items: center; justify-content: space-between; gap: 15px; }
+.trip-selected-heading h2 { font-family: "Playfair Display",Georgia,serif; font-size: clamp(1.75rem,3vw,2.4rem); font-weight: 600; margin: 5px 0 8px; }
+.trip-selected-heading p:last-child { margin: 0; }
+.trip-danger { border: 1px solid #ecc8cb; border-radius: 8px; background: #fff8f7; color: #b23c4a; padding: 9px 12px; font-weight: 700; font-size: .72rem; }
+.trip-day { border-top: 1px solid #e6eee6; padding-top: 18px; margin-top: 20px; }
+.trip-day h3 { color: #08794c; font-size: 1rem; margin: 0 0 14px; }
+.trip-place { display: flex; gap: 14px; align-items: center; border: 1px solid #ebf0ec; border-radius: 12px; padding: 11px; margin-bottom: 10px; }
+.trip-place img { width: 98px; height: 83px; border-radius: 8px; object-fit: cover; flex: none; }
+.trip-place-description { min-width: 0; flex: 1; }
+.trip-place-description strong { display: block; color: #163e2d; font-size: .95rem; }
+.trip-place-description small { display: block; color: #819287; font-size: .72rem; margin: 6px 0; }
+.trip-place-links { display: flex; gap: 14px; flex-wrap: wrap; font-size: .73rem; font-weight: 700; color: #08794c; }
+.trip-place-actions { display: flex; align-items: center; gap: 8px; }
+.trip-place-actions label { display: grid; gap: 3px; font-size: .67rem; color: #6c8171; }
+.trip-place-actions select { width: 65px; min-height: 35px; padding: 5px; }
+.trip-place-actions button { border: 0; background: transparent; color: #b3444b; font-size: .73rem; padding: 7px; }
+.trip-budget-grid { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 14px; }
+.trip-budget-total { display: flex; align-items: center; justify-content: space-between; padding: 19px; background: #e8f7ed; border: 1px solid #cdebd5; border-radius: 9px; font-weight: 700; }
+.trip-budget-total strong { font-size: 1.55rem; color: #065a3c; }
+.trip-form-footer { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.trip-form-footer a { color: #08794c; font-weight: 700; font-size: .8rem; }
+.trip-help { font-size: .78rem; color: #84968b; margin: 0; }
+.trip-banner { background: #e5f7e9; padding: 18px 23px; margin-bottom: 22px; border: 1px solid #c7eace; border-radius: 12px; }
+.trip-banner span { display: block; color: #08794c; font-size: .65rem; font-weight: 800; letter-spacing: .14em; }
+.trip-banner strong { display: block; font-family: "Playfair Display",Georgia,serif; font-size: 1.4rem; margin-top: 5px; }
+.trip-banner p { color: #657d6c; margin: 4px 0 0; font-size: .82rem; }
+.trip-alert, .trip-success { padding: 14px 17px; margin-bottom: 15px; border-radius: 9px; font-size: .84rem; }
+.trip-alert { background: #fff1ef; color: #a33838; border: 1px solid #f0d1c9; }
+.trip-success { background: #e6f7eb; color: #116743; border: 1px solid #cde9d1; }
+.trip-empty { min-height: 210px; display: grid; align-content: center; }
+@media (max-width: 900px) { .trip-layout { grid-template-columns: 1fr; } .trip-side { grid-template-columns: repeat(2,minmax(0,1fr)); } }
+@media (max-width: 600px) {
+  .trip-wrap { padding: 32px 16px 75px; }
+  .trip-header { flex-direction: column; align-items: start; }
+  .trip-side { grid-template-columns: 1fr; }
+  .trip-panel { padding: 18px; }
+  .trip-form-row, .trip-budget-grid { grid-template-columns: 1fr; }
+  .trip-place { align-items: start; flex-wrap: wrap; }
+  .trip-place-actions { flex: 1 1 100%; justify-content: space-between; }
+  .trip-form-footer { flex-direction: column; align-items: stretch; }
+}
+@media (prefers-reduced-motion: reduce) { .trip-page * { scroll-behavior: auto; } }

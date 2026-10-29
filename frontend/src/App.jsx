@@ -9,7 +9,7 @@ import ImagePlaceholder from "./components/ImagePlaceholder";
 import AdminDashboard from "./components/AdminDashboard";
 import SiteNavbar from "./components/SiteNavbar";
 import FavoritesPage from "./pages/FavoritesPage";
-import MyTripsPage from "./pages/MyTripsPage";
+import MyTripsPage from "./pages/TripPlannerPage";
 import ProfilePage from "./pages/ProfilePage";
 import galleImage from "./assets/destinations/srilanka/galle.jpg";
 import "./App.css";
@@ -424,7 +424,7 @@ function DestinationDetails() {
     return <main className="country-placeholder-page"><p className="eyebrow">Unable to load destination</p><h1>{error}</h1><Link className="primary-button" to="/destinations">Return to destinations</Link></main>;
   }
   if (!destination) return <main className="country-placeholder-page"><p className="eyebrow">Unknown destination</p><h1>That destination is not on the map yet.</h1><Link className="primary-button" to="/countries">Return to countries <span aria-hidden="true">↗</span></Link></main>;
-  return <main className="app-shell"><Header /><section className="detail-hero" style={destination.image ? { backgroundImage: `linear-gradient(90deg, rgba(1, 38, 35, .88), rgba(1, 38, 35, .1)), url(${destination.image})` } : undefined}><div><p className="kicker">{destination.country}</p><h1>{destination.name}</h1><p>{destination.description}</p><div className="detail-actions"><button className="lime-button" type="button">Add to plan ♡</button><button className="ghost-button" type="button">View on map ↗</button></div></div></section><section className="fact-row content-width">{destination.facts.map((fact) => <div key={fact}><span>◷</span><b>{fact.split(" ").slice(0, 2).join(" ")}</b><small>{fact}</small></div>)}</section><section className="content-width detail-content"><div><p className="kicker">Discover {destination.name}</p><h2>A journey worth<br /><em>remembering.</em></h2><p>{destination.description}</p></div><div className="detail-gallery">{destination.image ? <img src={destination.image} alt={`${destination.name} landscape`} /> : <ImagePlaceholder />}</div></section></main>;
+  return <main className="app-shell"><Header /><section className="detail-hero" style={destination.image ? { backgroundImage: `linear-gradient(90deg, rgba(1, 38, 35, .88), rgba(1, 38, 35, .1)), url(${destination.image})` } : undefined}><div><p className="kicker">{destination.country}</p><h1>{destination.name}</h1><p>{destination.description}</p><div className="detail-actions"><Link className="lime-button" to={`/my-trips?add=${encodeURIComponent(destination._id)}`}>Add to plan ♡</Link><a className="ghost-button" href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent([destination.name, destination.district, destination.country].filter(Boolean).join(", "))}`} target="_blank" rel="noopener noreferrer">View on map ↗</a></div></div></section><section className="fact-row content-width">{destination.facts.map((fact) => <div key={fact}><span>◷</span><b>{fact.split(" ").slice(0, 2).join(" ")}</b><small>{fact}</small></div>)}</section><section className="content-width detail-content"><div><p className="kicker">Discover {destination.name}</p><h2>A journey worth<br /><em>remembering.</em></h2><p>{destination.description}</p></div><div className="detail-gallery">{destination.image ? <img src={destination.image} alt={`${destination.name} landscape`} /> : <ImagePlaceholder />}</div></section></main>;
 }
 
 function Login() {
@@ -438,7 +438,7 @@ function Login() {
     setStatus({ loading: true, error: "" });
     try {
       const { user } = await login(form);
-      const returnPath = location.state?.from?.pathname || "/";
+      const returnPath = location.state?.from ? `${location.state.from.pathname}${location.state.from.search || ""}` : "/";
       navigate(location.state?.from ? returnPath : user?.role === "admin" ? "/admin" : "/");
     } catch (error) {
       setStatus({ loading: false, error: error.message });
@@ -484,7 +484,7 @@ function Signup() {
     setStatus({ loading: true, error: "" });
     try {
       const { user } = await signup(form);
-      const returnPath = location.state?.from?.pathname || "/";
+      const returnPath = location.state?.from ? `${location.state.from.pathname}${location.state.from.search || ""}` : "/";
       navigate(location.state?.from ? returnPath : user?.role === "admin" ? "/admin" : "/");
     } catch (error) {
       setStatus({ loading: false, error: error.message });
