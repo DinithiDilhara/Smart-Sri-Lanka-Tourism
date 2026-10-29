@@ -1,11 +1,12 @@
 import { Link } from "react-router-dom";
 
-export default function BrandLogo() {
+export default function BrandLogo({ to = "/", onClick } = {}) {
   return (
     <Link
       className="landing-wordmark"
-      to="/"
-      aria-label="Explore World home"
+      to={to}
+      onClick={onClick}
+      aria-label={to === "/admin" ? "Explore World admin dashboard" : "Explore World home"}
     >
       <span className="landing-mark" aria-hidden="true">
         <span />

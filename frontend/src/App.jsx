@@ -8,6 +8,7 @@ import { countryImage, destinationImages, normalizeSlug } from "./data/destinati
 import ImagePlaceholder from "./components/ImagePlaceholder";
 import AdminDashboard from "./components/AdminDashboard";
 import SiteNavbar from "./components/SiteNavbar";
+import BrandLogo from "./components/BrandLogo";
 import FavoritesPage from "./pages/FavoritesPage";
 import MyTripsPage from "./pages/TripPlannerPage";
 import ProfilePage from "./pages/ProfilePage";
@@ -451,10 +452,7 @@ function Login() {
       style={{ "--auth-background-image": `url(${galleImage})` }}
     >
       <div className="auth-panel">
-        <Link className="auth-wordmark" to="/" aria-label="Explore World home">
-          <span className="brand-symbol">⌁</span>
-          <span>Explore <b>World</b></span>
-        </Link>
+        <div className="auth-wordmark"><BrandLogo /></div>
         <p className="kicker">Welcome back</p>
         <h1>Continue your <em>journey.</em></h1>
         <p className="auth-intro">Sign in to keep exploring the places that inspire you.</p>
@@ -494,10 +492,7 @@ function Signup() {
   return (
     <main className="auth-page" style={{ "--auth-background-image": `url(${galleImage})` }}>
       <div className="auth-panel">
-        <Link className="auth-wordmark" to="/" aria-label="Explore World home">
-          <span className="brand-symbol">⌁</span>
-          <span>Explore <b>World</b></span>
-        </Link>
+        <div className="auth-wordmark"><BrandLogo /></div>
         <p className="kicker">Begin your journey</p>
         <h1>Create your <em>account.</em></h1>
         <p className="auth-intro">Save your places and keep your travels in one thoughtful space.</p>

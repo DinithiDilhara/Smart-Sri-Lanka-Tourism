@@ -7,6 +7,7 @@ import {
   updateDestination
 } from "../services/destinationService";
 import { logout } from "../services/authService";
+import BrandLogo from "./BrandLogo";
 import "./AdminDashboard.css";
 
 // Keep these fields in sync with the EXISTING Destination model / API.
@@ -91,10 +92,7 @@ function AdminSidebar() {
   return (
     <aside className={`admin-panel-sidebar ${menuOpen ? "admin-sidebar-open" : ""}`}>
       <div className="admin-sidebar-brand-row">
-        <Link className="brand admin-panel-brand" to="/" onClick={() => setMenuOpen(false)} aria-label="Explore World home">
-          <span className="brand-symbol">⌁</span>
-          <span>Explore <b>World</b><small>Global Destination Explorer</small></span>
-        </Link>
+        <div className="admin-panel-brand"><BrandLogo to="/admin" onClick={() => setMenuOpen(false)} /></div>
         <button type="button" className="admin-mobile-menu" aria-label={menuOpen ? "Close admin menu" : "Open admin menu"}
           aria-controls="explore-admin-links" aria-expanded={menuOpen} onClick={() => setMenuOpen((current) => !current)}>
           <AdminIcon name={menuOpen ? "close" : "menu"} />
