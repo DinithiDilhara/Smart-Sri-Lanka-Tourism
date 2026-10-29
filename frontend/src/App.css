@@ -158,6 +158,10 @@ a { color: inherit; text-decoration: none; }
 }
 
 .app-shell { min-height: 100svh; background: var(--cream); }
+.destination-page { background: #fff; }
+.destination-page .page-heading { padding-top: 24px; padding-bottom: 20px; }
+.destination-page .page-heading > p:last-child { margin-top: 12px; }
+.destination-page .filter-bar { padding-top: 10px; padding-bottom: 18px; }
 .topbar { position: relative; z-index: 3; display: flex; align-items: center; justify-content: space-between; gap: 30px; max-width: 1340px; margin: 0 auto; padding: 18px 36px; }
 .topbar-admin { max-width: none; padding-inline: 32px; background: var(--forest); color: white; }
 .brand { display: inline-flex; align-items: center; gap: 9px; color: inherit; font-size: 1.15rem; font-weight: 700; line-height: .95; letter-spacing: -.03em; }
@@ -380,7 +384,7 @@ h1 em, h2 em { font-family: Georgia, serif; font-weight: 400; }
 .landing-eyebrow { margin-bottom: clamp(18px, 2.2vw, 27px); font-size: .62rem; letter-spacing: .22em; }
 .landing-hero h1 { margin-bottom: clamp(24px, 3vw, 34px); font-size: clamp(4.8rem, 8.6vw, 7.7rem); line-height: .84; }
 .landing-description { max-width: 350px; margin-bottom: 30px; font-size: .82rem; line-height: 1.8; }
-.landing-hero-actions { display: flex; align-items: center; gap: 25px; flex-wrap: wrap; }
+.landing-hero-actions { display: flex; align-items: center; justify-content: center; gap: 25px; flex-wrap: wrap; }
 .landing-text-link { display: inline-flex; align-items: center; gap: 8px; color: #53645b; font-size: .68rem; font-weight: 600; transition: color .2s ease; }
 .landing-text-link:hover { color: #006b42; }
 .landing-text-link span { color: #006b42; font-size: .92rem; }
@@ -801,23 +805,25 @@ h1 em, h2 em { font-family: Georgia, serif; font-weight: 400; }
 /* Compact spacing on Explore Countries pages */
 
 .countries-topbar {
-  padding-top: 16px;
-  padding-bottom: 12px;
+  padding-top: 8px;
+  padding-bottom: 4px;
+  padding-left: 16px;
 }
 
 .countries-header {
-  margin-top: 8px;
-  margin-bottom: 28px;
+  margin-top: 0;
+  margin-bottom: 20px;
 }
 
 @media (max-width: 600px) {
   .countries-topbar {
-    padding-top: 14px;
-    padding-bottom: 10px;
+    padding-top: 8px;
+    padding-bottom: 4px;
+    padding-left: 12px;
   }
 
   .countries-header {
-    margin-top: 6px;
-    margin-bottom: 22px;
+    margin-top: 0;
+    margin-bottom: 18px;
   }
 }

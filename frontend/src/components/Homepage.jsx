@@ -44,14 +44,6 @@ const featuredDestinations = [
   { name: "Taj Mahal", location: "India", image: tajMahalImage, to: "/destinations/taj-mahal" }
 ];
 
-function ArrowIcon() {
-  return (
-    <svg aria-hidden="true" viewBox="0 0 20 20">
-      <path d="M3 10h13M10 4l6 6-6 6" />
-    </svg>
-  );
-}
-
 function CompassMark() {
   return (
     <span className="landing-mark" aria-hidden="true">
@@ -106,13 +98,12 @@ function Homepage() {
 
         <nav className="landing-links" aria-label="Main navigation">
           <Link className="is-current" to="/">Home</Link>
-          <a href="#featured-destinations">Explore</a>
+          <Link to="/destinations">Explore</Link>
           <Link to="/countries">Destinations</Link>
           <Link to="/about">About</Link>
         </nav>
 
         <div className="landing-actions">
-          <Link to="/destinations" aria-label="Search destinations">Search</Link>
           <Link className="landing-login" to="/login">Login</Link>
         </div>
       </header>
@@ -127,10 +118,7 @@ function Homepage() {
           </p>
           <div className="landing-hero-actions">
             <Link className="landing-primary-button" to="/countries">
-              Start Exploring <ArrowIcon />
-            </Link>
-            <Link className="landing-text-link" to="/countries">
-              Explore destinations <span aria-hidden="true">↗</span>
+              Start Exploring
             </Link>
           </div>
         </div>

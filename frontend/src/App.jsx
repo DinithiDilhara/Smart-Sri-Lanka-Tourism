@@ -127,7 +127,7 @@ function Logo() {
   return <Link className="brand" to="/"><span className="brand-symbol">⌁</span><span>Explore <b>World</b><small>Global Destination Explorer</small></span></Link>;
 }
 
-function Header({ admin = false, showSearch = true, showAdminLinks = true }) {
+function Header({ admin = false, showSearch = false, showAdminLinks = false }) {
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -322,7 +322,7 @@ function AllDestinations() {
   );
 
   return (
-    <main className="app-shell">
+    <main className="app-shell destination-page">
       <Header />
       <section className="page-heading">
         <p className="kicker">Explore the world</p>

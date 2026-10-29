@@ -125,9 +125,6 @@ function CountryList({ countries, loading, error }) {
               <div className="country-image">
                 {country.image ? <img src={country.image} alt={country.alt} loading="lazy" /> : <ImagePlaceholder />}
                 <div className="country-card-shade" />
-                <span className="country-index">
-                  {String(countries.findIndex((item) => item.slug === country.slug) + 1).padStart(2, "0")}
-                </span>
               </div>
               <div className="country-card-content">
                 <span>{country.region}</span><h2>{country.name}</h2><p>{country.tagline}</p>
