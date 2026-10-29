@@ -26,6 +26,35 @@ const defaultCalculator = {
   foodPerPersonDay: 0
 };
 
+function validateTripBasics(name, startDate, endDate) {
+  if (!String(name || "").trim()) return "Enter a trip name (not just spaces).";
+  if (String(name).trim().length > 100) return "Trip name must be 100 characters or fewer.";
+  if (startDate && endDate && endDate < startDate) return "End date cannot be before the start date.";
+  return "";
+}
+
+function validateTripBudget(details, budget, nights) {
+  if (String(details.hotelName || "").trim().length > 150) return "Hotel name is too long.";
+  for (const field of ["accommodation", "transport", "food", "activities"]) {
+    const value = budget[field];
+    if (value === "" || value === null || !Number.isFinite(Number(value)) || Number(value) < 0 || Number(value) > 100000000) {
+      return `Enter a valid ${field} amount between 0 and 100,000,000.`;
+    }
+  }
+  const calc = details.budgetCalculator;
+  if (!calc?.enabled) return "";
+  if (nights === null) return "Choose a valid start and end date before calculating your budget.";
+  for (const [key, upper] of [["travelers", 30], ["rooms", 20]]) {
+    const value = Number(calc[key]);
+    if (calc[key] === "" || !Number.isInteger(value) || value < 1 || value > upper) return `Enter a valid number of ${key} (1–${upper}).`;
+  }
+  for (const key of ["hotelPerNight", "foodPerPersonDay"]) {
+    const value = Number(calc[key]);
+    if (calc[key] === "" || !Number.isFinite(value) || value < 0 || value > 1000000) return "Hotel and food rates must be between 0 and 1,000,000.";
+  }
+  return "";
+}
+
 function calculateNights(start, end) {
   if (!start || !end) return null;
   const ms = Date.parse(end + "T00:00:00Z") - Date.parse(start + "T00:00:00Z");
@@ -160,6 +189,8 @@ export default function TripPlannerPage() {
 
   async function handleCreate(event) {
     event.preventDefault();
+    const validationError = validateTripBasics(newTrip.name, newTrip.startDate, newTrip.endDate);
+    if (validationError) { setError(validationError); setNotice(""); return; }
     await perform(async () => {
       const trip = await createTrip(newTrip);
       await refresh(trip._id);
@@ -190,10 +221,9 @@ export default function TripPlannerPage() {
   async function handleSave(event) {
     event.preventDefault();
     if (!selected || !details) return;
-    if (details.budgetCalculator.enabled && calculateNights(details.startDate, details.endDate) === null) {
-      setError("Choose a valid start and end date before calculating your budget.");
-      return;
-    }
+    const validationError = validateTripBasics(details.name, details.startDate, details.endDate)
+      || validateTripBudget(details, estimatedBudget, calculateNights(details.startDate, details.endDate));
+    if (validationError) { setError(validationError); setNotice(""); return; }
     await perform(async () => {
       const payload = { ...details, budget: estimatedBudget };
       await updateTrip(selected._id, payload);

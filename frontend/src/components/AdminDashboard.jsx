@@ -276,6 +276,27 @@ function ManageDestinations({ rows, loading, onCreate, onEdit, onView, onDelete,
   );
 }
 
+function validateDestinationForm(values) {
+  const maxLengths = { name: 120, country: 100, district: 120, category: 100, description: 3000 };
+  for (const [field, maximum] of Object.entries(maxLengths)) {
+    const value = values[field];
+    if (!value) return `Please enter a valid ${field === "district" ? "district / region" : field}.`;
+    if (value.length > maximum) return `${field} must be ${maximum} characters or fewer.`;
+  }
+  if (values.imageUrl) {
+    const value = values.imageUrl;
+    if (value.length > 2048 || /[\s<>"\\]/.test(value)) return "Enter a valid image URL without spaces.";
+    const localPath = value.startsWith("/") && !value.startsWith("//");
+    let remote = false;
+    try {
+      const url = new URL(value);
+      remote = (url.protocol === "http:" || url.protocol === "https:") && Boolean(url.hostname);
+    } catch { /* Only absolute HTTP(S) URLs or local image paths are allowed. */ }
+    if (!localPath && !remote) return "Use an https:// image URL or a local path beginning with /.";
+  }
+  return "";
+}
+
 function DestinationForm({ destination, onBack, onSaved }) {
   const isEditing = Boolean(destination?._id);
   const [form, setForm] = useState({ ...EMPTY_FORM, ...(destination || {}) });
@@ -289,9 +310,14 @@ function DestinationForm({ destination, onBack, onSaved }) {
 
   async function handleSubmit(event) {
     event.preventDefault();
-    setSaving(true);
     setError("");
     const payload = Object.fromEntries(Object.keys(EMPTY_FORM).map((key) => [key, (form[key] || "").trim()]));
+    const validationError = validateDestinationForm(payload);
+    if (validationError) {
+      setError(validationError);
+      return;
+    }
+    setSaving(true);
     try {
       if (isEditing) await updateDestination(destination._id, payload);
       else await createDestination(payload);
@@ -315,8 +341,8 @@ function DestinationForm({ destination, onBack, onSaved }) {
             <label>Country <span className="admin-required">*</span><input list="explore-admin-country-list" name="country" value={form.country || ""} onChange={updateField} placeholder="Select or type a country" required maxLength={100} /></label>
             <label>Category <span className="admin-required">*</span><input list="explore-admin-category-list" name="category" value={form.category || ""} onChange={updateField} placeholder="e.g. Nature" required maxLength={100} /></label>
             <label className="admin-form-wide">District / Region <span className="admin-required">*</span><input name="district" value={form.district || ""} onChange={updateField} placeholder="e.g. Badulla" required maxLength={120} /></label>
-            <label className="admin-form-wide">Description <span className="admin-required">*</span><textarea name="description" value={form.description || ""} onChange={updateField} placeholder="What makes this place special?" rows={6} required /></label>
-            <label className="admin-form-wide">Cover image URL <span className="admin-optional">Optional</span><input name="imageUrl" value={form.imageUrl || ""} onChange={updateField} placeholder="https://... or /images/destinations/ella.jpg" /><small>Use a hosted image URL or a path to an image already in your public folder. The current API supports one image per destination.</small></label>
+            <label className="admin-form-wide">Description <span className="admin-required">*</span><textarea name="description" value={form.description || ""} onChange={updateField} placeholder="What makes this place special?" rows={6} maxLength={3000} required /></label>
+            <label className="admin-form-wide">Cover image URL <span className="admin-optional">Optional</span><input name="imageUrl" value={form.imageUrl || ""} onChange={updateField} placeholder="https://... or /images/destinations/ella.jpg" maxLength={2048} /><small>Use a hosted image URL or a path to an image already in your public folder. The current API supports one image per destination.</small></label>
           </div>
           <datalist id="explore-admin-country-list">{COUNTRY_SUGGESTIONS.map((item) => <option key={item} value={item} />)}</datalist>
           <datalist id="explore-admin-category-list">{CATEGORY_SUGGESTIONS.map((item) => <option key={item} value={item} />)}</datalist>
