@@ -1,34 +1,23 @@
-﻿import { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { getDestinations } from "../services/destinationService";
 import {
   getDestinationImage,
   normalizeSlug
 } from "../data/destinationImages";
 
-let destinationsCache = null;
-let destinationsRequest = null;
-
 export function useDestinations() {
-  const [state, setState] = useState(() => ({
-    destinations: destinationsCache || [],
-    loading: !destinationsCache,
+  const [state, setState] = useState({
+    destinations: [],
+    loading: true,
     error: ""
-  }));
+  });
 
   useEffect(() => {
     let cancelled = false;
 
     async function loadDestinations() {
       try {
-        if (destinationsCache) {
-          return;
-        }
-
-        if (!destinationsRequest) {
-          destinationsRequest = getDestinations();
-        }
-
-        const data = await destinationsRequest;
+        const data = await getDestinations();
 
         if (!Array.isArray(data)) {
           throw new Error("Invalid destinations response");
@@ -44,33 +33,34 @@ export function useDestinations() {
             slug,
             countrySlug,
             image:
-              getDestinationImage(countrySlug, slug) ||
               item.imageUrl ||
+              getDestinationImage(countrySlug, slug) ||
               null,
             facts: [
               item.district,
               item.category
             ].filter(Boolean)
           };
-        }).filter((item, index, items) => (
-          items.findIndex((candidate) => (
+        }).filter((item, index, items) =>
+          items.findIndex(candidate =>
             candidate.countrySlug === item.countrySlug &&
             candidate.slug === item.slug
-          )) === index
-        ));
-
-        destinationsCache = mapped;
+          ) === index
+        );
 
         if (!cancelled) {
-          setState({ destinations: mapped, loading: false, error: "" });
+          setState({
+            destinations: mapped,
+            loading: false,
+            error: ""
+          });
         }
-      } catch (err) {
-        destinationsRequest = null;
+      } catch (error) {
         if (!cancelled) {
           setState({
             destinations: [],
             loading: false,
-            error: err instanceof Error ? err.message : "Unable to load destinations"
+            error: error.message || "Unable to load destinations"
           });
         }
       }
