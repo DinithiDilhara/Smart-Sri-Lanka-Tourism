@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import SiteNavbar from "../components/SiteNavbar";
 import { useDestinations } from "../hooks/useDestinations";
@@ -9,7 +9,11 @@ import {
   deleteTrip,
   addTripDestination,
   setDestinationDay,
-  removeTripDestination
+  removeTripDestination,
+  saveTravelIdea,
+  addCustomTripStop,
+  setCustomTripStopDay,
+  removeCustomTripStop
 } from "../services/tripsService";
 import "./TripPlannerPage.css";
 
@@ -43,12 +47,14 @@ export default function TripPlannerPage() {
   const [destinationId, setDestinationId] = useState("");
   const [newTrip, setNewTrip] = useState({ name: "", startDate: "", endDate: "" });
   const [details, setDetails] = useState(null);
+  const [customStop, setCustomStop] = useState({ name: "", country: "", region: "", day: 1 });
+  const handledAdd = useRef("");
 
   const pendingId = new URLSearchParams(location.search).get("add");
   const pending = destinations.find((item) => item._id === pendingId);
   const selected = trips.find((trip) => trip._id === selectedTripId) || trips[0] || null;
 
-  const activeDestinationId = pendingId || destinationId;
+  const activeDestinationId = destinationId;
 
   const groupedItems = useMemo(() => {
     if (!selected) return [];
@@ -57,6 +63,16 @@ export default function TripPlannerPage() {
       if (!item.destination) continue;
       if (!grouped.has(item.day)) grouped.set(item.day, []);
       grouped.get(item.day).push(item.destination);
+    }
+    for (const stop of selected.customStops || []) {
+      if (!grouped.has(stop.day)) grouped.set(stop.day, []);
+      grouped.get(stop.day).push({
+        _id: stop._id,
+        name: stop.name,
+        country: stop.country,
+        district: stop.region,
+        isCustom: true
+      });
     }
     return [...grouped.entries()].sort((a, b) => Number(a[0]) - Number(b[0]));
   }, [selected]);
@@ -69,6 +85,28 @@ export default function TripPlannerPage() {
       .finally(() => { if (active) setLoading(false); });
     return () => { active = false; };
   }, []);
+
+  // Every Add to plan click is persisted immediately in the user's MongoDB draft.
+  // Existing draft destinations remain; clicking a second country never replaces them.
+  useEffect(() => {
+    if (!pendingId || loading || handledAdd.current === pendingId) return;
+    handledAdd.current = pendingId;
+    async function addIdea() {
+      setBusy(true);
+      setError("");
+      try {
+        const trip = await saveTravelIdea(pendingId);
+        await refresh(trip._id);
+        setNotice("Destination saved to My Travel Ideas. Keep exploring or plan your trip later.");
+        navigate("/my-trips", { replace: true });
+      } catch (err) {
+        setError(err.message || "Unable to save destination to travel ideas.");
+      } finally {
+        setBusy(false);
+      }
+    }
+    addIdea();
+  }, [pendingId, loading, navigate]);
 
   useEffect(() => {
     if (!selected) {
@@ -109,18 +147,9 @@ export default function TripPlannerPage() {
     event.preventDefault();
     await perform(async () => {
       const trip = await createTrip(newTrip);
-      if (pendingId) {
-        try {
-          await addTripDestination(trip._id, pendingId, 1);
-        } catch (err) {
-          await refresh(trip._id);
-          throw new Error(`Trip created, but destination could not be added: ${err.message}`);
-        }
-        navigate("/my-trips", { replace: true });
-      }
       await refresh(trip._id);
       setNewTrip({ name: "", startDate: "", endDate: "" });
-    }, pendingId ? "Trip created and destination added." : "Trip created successfully.");
+    }, "Trip created successfully.");
   }
 
   async function handleAdd(event) {
@@ -130,8 +159,17 @@ export default function TripPlannerPage() {
       await addTripDestination(selected._id, activeDestinationId, Number(day));
       await refresh(selected._id);
       setDestinationId("");
-      if (pendingId) navigate("/my-trips", { replace: true });
     }, "Destination added to your trip.");
+  }
+
+  async function handleAddCustom(event) {
+    event.preventDefault();
+    if (!selected) return;
+    await perform(async () => {
+      await addCustomTripStop(selected._id, customStop);
+      await refresh(selected._id);
+      setCustomStop({ name: "", country: "", region: "", day: 1 });
+    }, "Your personal place was added to the trip.");
   }
 
   async function handleSave(event) {
@@ -146,7 +184,11 @@ export default function TripPlannerPage() {
   async function handleMove(destination, nextDay) {
     if (!selected) return;
     await perform(async () => {
-      await setDestinationDay(selected._id, destination._id, Number(nextDay));
+      if (destination.isCustom) {
+        await setCustomTripStopDay(selected._id, destination._id, Number(nextDay));
+      } else {
+        await setDestinationDay(selected._id, destination._id, Number(nextDay));
+      }
       await refresh(selected._id);
     }, "Itinerary updated.");
   }
@@ -154,7 +196,11 @@ export default function TripPlannerPage() {
   async function handleRemove(destination) {
     if (!selected) return;
     await perform(async () => {
-      await removeTripDestination(selected._id, destination._id);
+      if (destination.isCustom) {
+        await removeCustomTripStop(selected._id, destination._id);
+      } else {
+        await removeTripDestination(selected._id, destination._id);
+      }
       await refresh(selected._id);
     }, "Destination removed from your trip.");
   }
@@ -191,7 +237,7 @@ export default function TripPlannerPage() {
           <section className="trip-banner">
             <span>ADD TO YOUR JOURNEY</span>
             <strong>{pending ? `${pending.name}, ${pending.country}` : placesLoading ? "Loading destination…" : "Selected destination"}</strong>
-            <p>Choose one of your trips below, or create a new trip first.</p>
+            <p>Saving this destination to your MongoDB travel-ideas draft…</p>
           </section>
         )}
 
@@ -209,8 +255,8 @@ export default function TripPlannerPage() {
                     className={selected?._id === trip._id ? "trip-list-item is-active" : "trip-list-item"}
                     onClick={() => { setSelectedTripId(trip._id); setError(""); }}
                   >
-                    <strong>{trip.name}</strong>
-                    <small>{trip.items?.length || 0} places · {trip.startDate || "Dates not set"}</small>
+                    <strong>{trip.name}{trip.isDraft ? " · Draft" : ""}</strong>
+                    <small>{(trip.items?.length || 0) + (trip.customStops?.length || 0)} places · {trip.startDate || "Dates not set"}</small>
                   </button>
                 ))}
               </div>
@@ -248,7 +294,7 @@ export default function TripPlannerPage() {
                   <div>
                     <p className="trip-eyebrow">CURRENT ITINERARY</p>
                     <h2>{selected.name}</h2>
-                    <p>{(selected.items || []).length} saved destinations</p>
+                    <p>{(selected.items?.length || 0) + (selected.customStops?.length || 0)} saved places {selected.isDraft ? "· Unplanned draft" : ""}</p>
                   </div>
                   <button className="trip-danger" type="button" onClick={handleDelete} disabled={busy}>Delete trip</button>
                 </section>
@@ -258,8 +304,8 @@ export default function TripPlannerPage() {
                   <div className="trip-form-row">
                     <label>Destination
                       <select
-                        disabled={Boolean(pendingId) || placesLoading}
-                        value={pendingId || destinationId}
+                        disabled={placesLoading}
+                        value={destinationId}
                         onChange={(e) => setDestinationId(e.target.value)}
                         required
                       >
@@ -281,6 +327,32 @@ export default function TripPlannerPage() {
                   {placesError && <p role="alert">Unable to load destination options: {placesError}</p>}
                 </form>
 
+                <form className="trip-panel trip-form" onSubmit={handleAddCustom}>
+                  <h2>Add any other place</h2>
+                  <p className="trip-help">Can't find a place in Explore World? Add it as a personal stop in your itinerary. It stays private and does not change the public destination catalog.</p>
+                  <div className="trip-form-row">
+                    <label>Place name
+                      <input required maxLength={120} placeholder="e.g. Universal Studios Singapore"
+                        value={customStop.name} onChange={(e) => setCustomStop({ ...customStop, name: e.target.value })} />
+                    </label>
+                    <label>Country
+                      <input required maxLength={100} placeholder="e.g. Singapore"
+                        value={customStop.country} onChange={(e) => setCustomStop({ ...customStop, country: e.target.value })} />
+                    </label>
+                  </div>
+                  <div className="trip-form-row">
+                    <label>City / region (optional)
+                      <input maxLength={120} placeholder="e.g. Sentosa"
+                        value={customStop.region} onChange={(e) => setCustomStop({ ...customStop, region: e.target.value })} />
+                    </label>
+                    <label>Trip day (1–60)
+                      <input type="number" required min="1" max="60"
+                        value={customStop.day} onChange={(e) => setCustomStop({ ...customStop, day: e.target.value })} />
+                    </label>
+                  </div>
+                  <button className="trip-primary" disabled={busy} type="submit">Add personal stop</button>
+                </form>
+
                 <section className="trip-panel">
                   <h2>Day-by-day itinerary</h2>
                   {groupedItems.length === 0 && <p>No destinations added yet. Start with one place above.</p>}
@@ -294,7 +366,9 @@ export default function TripPlannerPage() {
                             <strong>{place.name}</strong>
                             <small>{place.district}, {place.country}</small>
                             <div className="trip-place-links">
-                              <Link to={`/destinations/${place.slug}`}>Details ↗</Link>
+                              {place.isCustom ? <span className="trip-personal-label">Personal stop</span> : (
+                                <Link to={`/destinations/${place.slug}`}>Details ↗</Link>
+                              )}
                               <MapLink destination={place} />
                             </div>
                           </div>

@@ -49,3 +49,26 @@ export const removeTripDestination = (id, destinationId) =>
   request(`/${encodeURIComponent(id)}/destinations/${encodeURIComponent(destinationId)}`, {
     method: "DELETE"
   }).then((result) => result.trip);
+
+export const saveTravelIdea = (destinationId) =>
+  request("/ideas", {
+    method: "POST",
+    body: JSON.stringify({ destinationId })
+  }).then((result) => result.trip);
+
+export const addCustomTripStop = (tripId, data) =>
+  request(`/${encodeURIComponent(tripId)}/custom-stops`, {
+    method: "POST",
+    body: JSON.stringify(data)
+  }).then((result) => result.trip);
+
+export const setCustomTripStopDay = (tripId, stopId, day) =>
+  request(`/${encodeURIComponent(tripId)}/custom-stops/${encodeURIComponent(stopId)}`, {
+    method: "PATCH",
+    body: JSON.stringify({ day })
+  }).then((result) => result.trip);
+
+export const removeCustomTripStop = (tripId, stopId) =>
+  request(`/${encodeURIComponent(tripId)}/custom-stops/${encodeURIComponent(stopId)}`, {
+    method: "DELETE"
+  }).then((result) => result.trip);

@@ -11,6 +11,15 @@ const tripSchema = new mongoose.Schema(
     name: { type: String, required: true, trim: true, maxlength: 100 },
     startDate: { type: String, default: "" },
     endDate: { type: String, default: "" },
+    isDraft: { type: Boolean, default: false },
+    customStops: [
+      {
+        name: { type: String, required: true, trim: true, maxlength: 120 },
+        country: { type: String, required: true, trim: true, maxlength: 100 },
+        region: { type: String, trim: true, maxlength: 120, default: "" },
+        day: { type: Number, min: 1, max: 60, default: 1 }
+      }
+    ],
     hotelName: { type: String, trim: true, maxlength: 150, default: "" },
     budget: {
       accommodation: { type: Number, min: 0, default: 0 },

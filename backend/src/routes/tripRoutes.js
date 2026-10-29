@@ -50,6 +50,33 @@ router.get("/", async (req, res, next) => {
   } catch (error) { next(error); }
 });
 
+// One-tap, account-specific draft. Repeating the request never deletes previous stops.
+router.post("/ideas", requireAllowedOrigin, async (req, res, next) => {
+  try {
+    const destinationId = req.body?.destinationId;
+    if (!validId(destinationId)) {
+      return res.status(400).json({ message: "Invalid destination ID." });
+    }
+    if (!(await Destination.exists({ _id: destinationId }))) {
+      return res.status(404).json({ message: "Destination not found." });
+    }
+    let trip = await Trip.findOne({ user: req.user.sub, isDraft: true })
+      .sort({ createdAt: 1 });
+    if (!trip) {
+      trip = await Trip.create({
+        user: req.user.sub,
+        name: "My Travel Ideas",
+        isDraft: true
+      });
+    }
+    if (!trip.items.some((item) => String(item.destination) === destinationId)) {
+      trip.items.push({ destination: destinationId, day: 1 });
+      await trip.save();
+    }
+    res.json({ trip: await populated(trip) });
+  } catch (error) { next(error); }
+});
+
 router.post("/", requireAllowedOrigin, async (req, res, next) => {
   try {
     const name = String(req.body?.name || "").trim();
@@ -83,6 +110,8 @@ router.patch("/:tripId", requireAllowedOrigin, async (req, res, next) => {
       return res.status(400).json({ message: "Invalid trip details or budget." });
     }
     Object.assign(trip, { name, startDate, endDate, hotelName, budget });
+    // Explicitly saving trip details turns a draft into a normal trip.
+    trip.isDraft = false;
     await trip.save();
     res.json({ trip: await populated(trip) });
   } catch (error) { next(error); }
@@ -134,6 +163,56 @@ router.delete("/:tripId/destinations/:destinationId", requireAllowedOrigin, asyn
     const trip = await Trip.findOne({ _id: tripId, user: req.user.sub });
     if (!trip) return res.status(404).json({ message: "Trip not found." });
     trip.items = trip.items.filter((item) => String(item.destination) !== destinationId);
+    await trip.save();
+    res.json({ trip: await populated(trip) });
+  } catch (error) { next(error); }
+});
+
+// Personal trip stops are private to the user, not added to the public destination catalog.
+router.post("/:tripId/custom-stops", requireAllowedOrigin, async (req, res, next) => {
+  try {
+    if (!validId(req.params.tripId)) return res.status(400).json({ message: "Invalid trip ID." });
+    const name = String(req.body?.name || "").trim();
+    const country = String(req.body?.country || "").trim();
+    const region = String(req.body?.region || "").trim();
+    const day = Number(req.body?.day ?? 1);
+    if (!name || name.length > 120 || !country || country.length > 100 ||
+        region.length > 120 || !validDay(day)) {
+      return res.status(400).json({ message: "Enter a valid place, country and day." });
+    }
+    const trip = await Trip.findOne({ _id: req.params.tripId, user: req.user.sub });
+    if (!trip) return res.status(404).json({ message: "Trip not found." });
+    trip.customStops.push({ name, country, region, day });
+    await trip.save();
+    res.json({ trip: await populated(trip) });
+  } catch (error) { next(error); }
+});
+
+router.patch("/:tripId/custom-stops/:stopId", requireAllowedOrigin, async (req, res, next) => {
+  try {
+    if (!validId(req.params.tripId) || !validId(req.params.stopId) || !validDay(req.body?.day)) {
+      return res.status(400).json({ message: "Invalid trip, stop or day." });
+    }
+    const trip = await Trip.findOne({ _id: req.params.tripId, user: req.user.sub });
+    if (!trip) return res.status(404).json({ message: "Trip not found." });
+    const stop = trip.customStops.id(req.params.stopId);
+    if (!stop) return res.status(404).json({ message: "Personal stop not found." });
+    stop.day = Number(req.body.day);
+    await trip.save();
+    res.json({ trip: await populated(trip) });
+  } catch (error) { next(error); }
+});
+
+router.delete("/:tripId/custom-stops/:stopId", requireAllowedOrigin, async (req, res, next) => {
+  try {
+    if (!validId(req.params.tripId) || !validId(req.params.stopId)) {
+      return res.status(400).json({ message: "Invalid trip or stop ID." });
+    }
+    const trip = await Trip.findOne({ _id: req.params.tripId, user: req.user.sub });
+    if (!trip) return res.status(404).json({ message: "Trip not found." });
+    const stop = trip.customStops.id(req.params.stopId);
+    if (!stop) return res.status(404).json({ message: "Personal stop not found." });
+    trip.customStops.pull(req.params.stopId);
     await trip.save();
     res.json({ trip: await populated(trip) });
   } catch (error) { next(error); }

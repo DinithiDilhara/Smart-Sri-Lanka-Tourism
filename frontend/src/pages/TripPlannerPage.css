@@ -67,3 +67,5 @@
   .trip-form-footer { flex-direction: column; align-items: stretch; }
 }
 @media (prefers-reduced-motion: reduce) { .trip-page * { scroll-behavior: auto; } }
+
+.trip-personal-label { font-size: .7rem; color: #487760; font-weight: 700; }
