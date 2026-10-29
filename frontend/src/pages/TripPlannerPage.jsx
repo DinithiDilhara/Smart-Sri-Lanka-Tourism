@@ -18,6 +18,20 @@ import {
 import "./TripPlannerPage.css";
 
 const emptyBudget = { accommodation: 0, transport: 0, food: 0, activities: 0 };
+const defaultCalculator = {
+  enabled: false,
+  travelers: 1,
+  rooms: 1,
+  hotelPerNight: 0,
+  foodPerPersonDay: 0
+};
+
+function calculateNights(start, end) {
+  if (!start || !end) return null;
+  const ms = Date.parse(end + "T00:00:00Z") - Date.parse(start + "T00:00:00Z");
+  if (!Number.isFinite(ms) || ms < 0) return null;
+  return Math.round(ms / 86400000);
+}
 
 function MapLink({ destination }) {
   const query = [destination.name, destination.district, destination.country]
@@ -118,7 +132,8 @@ export default function TripPlannerPage() {
       startDate: selected.startDate || "",
       endDate: selected.endDate || "",
       hotelName: selected.hotelName || "",
-      budget: { ...emptyBudget, ...(selected.budget || {}) }
+      budget: { ...emptyBudget, ...(selected.budget || {}) },
+      budgetCalculator: { ...defaultCalculator, ...(selected.budgetCalculator || {}) }
     });
   }, [selected?._id, selected?.updatedAt]);
 
@@ -175,10 +190,15 @@ export default function TripPlannerPage() {
   async function handleSave(event) {
     event.preventDefault();
     if (!selected || !details) return;
+    if (details.budgetCalculator.enabled && calculateNights(details.startDate, details.endDate) === null) {
+      setError("Choose a valid start and end date before calculating your budget.");
+      return;
+    }
     await perform(async () => {
-      await updateTrip(selected._id, details);
+      const payload = { ...details, budget: estimatedBudget };
+      await updateTrip(selected._id, payload);
       await refresh(selected._id);
-    }, "Trip details saved to MongoDB.");
+    }, "Trip details and budget saved to MongoDB.");
   }
 
   async function handleMove(destination, nextDay) {
@@ -214,8 +234,15 @@ export default function TripPlannerPage() {
     }, "Trip deleted.");
   }
 
-  const totalBudget = Object.values(details?.budget || emptyBudget)
-    .reduce((total, amount) => total + (Number(amount) || 0), 0);
+  const calculator = details?.budgetCalculator || defaultCalculator;
+  const nights = calculateNights(details?.startDate, details?.endDate);
+  const estimatedBudget = { ...emptyBudget, ...(details?.budget || {}) };
+  if (calculator.enabled && nights !== null) {
+    estimatedBudget.accommodation = Math.round(nights * Number(calculator.rooms) * Number(calculator.hotelPerNight) * 100) / 100;
+    estimatedBudget.food = Math.round((nights + 1) * Number(calculator.travelers) * Number(calculator.foodPerPersonDay) * 100) / 100;
+  }
+  const totalBudget = Object.values(estimatedBudget).reduce((total, amount) => total + (Number(amount) || 0), 0);
+  const hasEstimate = Object.values(estimatedBudget).some((value) => Number(value) > 0);
 
   return (
     <main className="trip-page app-shell">
@@ -413,19 +440,89 @@ export default function TripPlannerPage() {
                           onChange={(e) => setDetails({ ...details, endDate: e.target.value })} />
                       </label>
                     </div>
-                    <div className="trip-budget-grid">
-                      {Object.keys(emptyBudget).map((key) => (
-                        <label key={key}>{key[0].toUpperCase() + key.slice(1)} (USD)
-                          <input type="number" min="0" step="0.01"
-                            value={details.budget[key]}
-                            onChange={(e) => setDetails({
-                              ...details,
-                              budget: { ...details.budget, [key]: e.target.value }
-                            })} />
-                        </label>
-                      ))}
+                    <div className="trip-calculator-switch">
+                      <div>
+                        <strong>Automatic budget calculator</strong>
+                        <p>Enter your own estimated rates; we calculate the totals. No live prices.</p>
+                      </div>
+                      <button
+                        type="button"
+                        className="trip-outline trip-calculator-toggle"
+                        aria-pressed={calculator.enabled}
+                        onClick={() => setDetails({
+                          ...details,
+                          budgetCalculator: { ...calculator, enabled: !calculator.enabled }
+                        })}
+                      >
+                        {calculator.enabled ? "Use manual totals" : "Use automatic calculator"}
+                      </button>
                     </div>
-                    <div className="trip-budget-total"><span>Estimated total</span><strong>${totalBudget.toFixed(2)}</strong></div>
+                    {calculator.enabled ? (
+                      <>
+                        <p className="trip-help">
+                          {nights === null
+                            ? "Select start and end dates to calculate the number of nights."
+                            : `${nights} night${nights === 1 ? "" : "s"} · ${nights + 1} travel day${nights === 0 ? "" : "s"} (calculated from your dates).`}
+                        </p>
+                        <div className="trip-budget-grid">
+                          {[
+                            ["travelers", "Travelers", 1, 30, 1],
+                            ["rooms", "Hotel rooms", 1, 20, 1],
+                            ["hotelPerNight", "Hotel price per room/night (USD)", 0, 1000000, 0.01],
+                            ["foodPerPersonDay", "Food per person/day (USD)", 0, 1000000, 0.01]
+                          ].map(([key, label, min, max, step]) => (
+                            <label key={key}>{label}
+                              <input type="number" min={min} max={max} step={step} required
+                                value={calculator[key]}
+                                onChange={(e) => setDetails({
+                                  ...details,
+                                  budgetCalculator: { ...calculator, [key]: e.target.value }
+                                })} />
+                            </label>
+                          ))}
+                          {[
+                            ["transport", "Total transport (USD)"],
+                            ["activities", "Total activities (USD)"]
+                          ].map(([key, label]) => (
+                            <label key={key}>{label}
+                              <input type="number" min="0" max="100000000" step="0.01"
+                                value={details.budget[key]}
+                                onChange={(e) => setDetails({
+                                  ...details,
+                                  budget: { ...details.budget, [key]: e.target.value }
+                                })} />
+                            </label>
+                          ))}
+                        </div>
+                        {nights !== null && (
+                          <div className="trip-budget-breakdown">
+                            <span>Hotel: {nights} nights × {calculator.rooms} room(s) × ${Number(calculator.hotelPerNight || 0).toFixed(2)} = ${Number(estimatedBudget.accommodation).toFixed(2)}</span>
+                            <span>Food: {nights + 1} days × {calculator.travelers} traveler(s) × ${Number(calculator.foodPerPersonDay || 0).toFixed(2)} = ${Number(estimatedBudget.food).toFixed(2)}</span>
+                          </div>
+                        )}
+                      </>
+                    ) : (
+                      <>
+                        <p className="trip-help">Manual totals from your existing trip are preserved. Switch to automatic only when you want to calculate from rates.</p>
+                        <div className="trip-budget-grid">
+                          {Object.keys(emptyBudget).map((key) => (
+                            <label key={key}>{key[0].toUpperCase() + key.slice(1)} total (USD)
+                              <input type="number" min="0" max="100000000" step="0.01"
+                                value={details.budget[key]}
+                                onChange={(e) => setDetails({
+                                  ...details,
+                                  budget: { ...details.budget, [key]: e.target.value }
+                                })} />
+                            </label>
+                          ))}
+                        </div>
+                      </>
+                    )}
+                    <div className="trip-budget-total">
+                      <span>{hasEstimate ? "Estimated total" : "Budget not estimated yet"}</span>
+                      <strong>{hasEstimate ? `$${totalBudget.toFixed(2)}` : "—"}</strong>
+                    </div>
+                    <p className="trip-help">Estimates only. Actual hotel and travel costs may vary.</p>
                     <div className="trip-form-footer">
                       <Link to="/hotels">Browse hotel suggestions ↗</Link>
                       <button className="trip-primary" disabled={busy} type="submit">Save trip details</button>

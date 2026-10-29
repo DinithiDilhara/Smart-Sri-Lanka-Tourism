@@ -36,6 +36,29 @@ function parseBudget(budget, current = {}) {
   return result;
 }
 
+// Validate stored calculator inputs; preserve older trips until the user enables it.
+function parseCalculator(input, current = {}) {
+  if (input === undefined) return { ...current };
+  if (!input || typeof input !== "object" || Array.isArray(input) || typeof input.enabled !== "boolean") return null;
+  const values = {
+    travelers: Number(input.travelers),
+    rooms: Number(input.rooms),
+    hotelPerNight: Number(input.hotelPerNight),
+    foodPerPersonDay: Number(input.foodPerPersonDay)
+  };
+  if (!Number.isInteger(values.travelers) || values.travelers < 1 || values.travelers > 30 ||
+      !Number.isInteger(values.rooms) || values.rooms < 1 || values.rooms > 20 ||
+      !Number.isFinite(values.hotelPerNight) || values.hotelPerNight < 0 || values.hotelPerNight > 1000000 ||
+      !Number.isFinite(values.foodPerPersonDay) || values.foodPerPersonDay < 0 || values.foodPerPersonDay > 1000000) return null;
+  return { enabled: input.enabled, ...values };
+}
+
+function countNights(start, end) {
+  if (!start || !end) return null;
+  const days = Math.round((Date.parse(end + "T00:00:00Z") - Date.parse(start + "T00:00:00Z")) / 86400000);
+  return days >= 0 ? days : null;
+}
+
 async function populated(trip) {
   await trip.populate("items.destination", fields);
   return trip;
@@ -106,10 +129,28 @@ router.patch("/:tripId", requireAllowedOrigin, async (req, res, next) => {
       food: trip.budget?.food ?? 0,
       activities: trip.budget?.activities ?? 0
     });
-    if (!name || name.length > 100 || hotelName.length > 150 || !validDates(startDate, endDate) || !budget) {
+    const budgetCalculator = parseCalculator(req.body?.budgetCalculator, {
+      enabled: trip.budgetCalculator?.enabled ?? false,
+      travelers: trip.budgetCalculator?.travelers ?? 1,
+      rooms: trip.budgetCalculator?.rooms ?? 1,
+      hotelPerNight: trip.budgetCalculator?.hotelPerNight ?? 0,
+      foodPerPersonDay: trip.budgetCalculator?.foodPerPersonDay ?? 0
+    });
+    if (!name || name.length > 100 || hotelName.length > 150 || !validDates(startDate, endDate) || !budget || !budgetCalculator) {
       return res.status(400).json({ message: "Invalid trip details or budget." });
     }
-    Object.assign(trip, { name, startDate, endDate, hotelName, budget });
+    if (budgetCalculator.enabled) {
+      const nights = countNights(startDate, endDate);
+      if (nights === null) {
+        return res.status(400).json({ message: "Select start and end dates to calculate a budget." });
+      }
+      budget.accommodation = Math.round((nights * budgetCalculator.rooms * budgetCalculator.hotelPerNight + Number.EPSILON) * 100) / 100;
+      budget.food = Math.round(((nights + 1) * budgetCalculator.travelers * budgetCalculator.foodPerPersonDay + Number.EPSILON) * 100) / 100;
+      if (budget.accommodation > 100000000 || budget.food > 100000000) {
+        return res.status(400).json({ message: "Budget estimate is too large." });
+      }
+    }
+    Object.assign(trip, { name, startDate, endDate, hotelName, budget, budgetCalculator });
     // Explicitly saving trip details turns a draft into a normal trip.
     trip.isDraft = false;
     await trip.save();

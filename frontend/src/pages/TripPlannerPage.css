@@ -69,3 +69,10 @@
 @media (prefers-reduced-motion: reduce) { .trip-page * { scroll-behavior: auto; } }
 
 .trip-personal-label { font-size: .7rem; color: #487760; font-weight: 700; }
+
+/* Budget calculator (scoped to My Trips) */
+.trip-calculator-switch { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px; padding: 15px; border: 1px solid #d9ecdf; border-radius: 11px; background: #f4fbf6; }
+.trip-calculator-switch strong { display: block; font-size: .87rem; color: #174b34; }
+.trip-calculator-switch p { margin: 5px 0 0; color: #748a7b; font-size: .74rem; }
+.trip-calculator-toggle { background: #fff; cursor: pointer; font-size: .74rem; white-space: normal; }
+.trip-budget-breakdown { display: grid; gap: 7px; padding: 14px; border-radius: 9px; background: #f5faf5; color: #4c745b; font-size: .76rem; line-height: 1.45; }

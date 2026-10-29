@@ -21,6 +21,14 @@ const tripSchema = new mongoose.Schema(
       }
     ],
     hotelName: { type: String, trim: true, maxlength: 150, default: "" },
+    // Optional calculator settings. Older trips keep their existing budget totals.
+    budgetCalculator: {
+      enabled: { type: Boolean, default: false },
+      travelers: { type: Number, min: 1, max: 30, default: 1 },
+      rooms: { type: Number, min: 1, max: 20, default: 1 },
+      hotelPerNight: { type: Number, min: 0, max: 1000000, default: 0 },
+      foodPerPersonDay: { type: Number, min: 0, max: 1000000, default: 0 }
+    },
     budget: {
       accommodation: { type: Number, min: 0, default: 0 },
       transport: { type: Number, min: 0, default: 0 },
