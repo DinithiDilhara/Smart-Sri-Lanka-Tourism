@@ -22,6 +22,15 @@ const countries = [
   { name: "Thailand", slug: "thailand", region: "Southeast Asia", tagline: "Beaches, islands and vibrant life", image: countryImage.thailand }
 ];
 
+import {
+  favoriteId,
+  getFavoriteIds,
+  toggleFavorite,
+  loadFavoriteIds,
+  subscribeFavorites
+} from "./services/favoritesService";
+
+
 // Preserve the five featured countries, while also supporting countries added in MongoDB.
 function availableCountries(databaseDestinations = []) {
   const combined = new Map(countries.map((country) => [country.slug, country]));
@@ -132,14 +141,79 @@ function Header() {
   return <SiteNavbar />;
 }
 
+
 function DestinationCard({ destination }) {
+  const navigate = useNavigate();
+  const location = useLocation();
+
+  const [saved, setSaved] = useState(() =>
+    getFavoriteIds().includes(favoriteId(destination))
+  );
+
+  useEffect(() => {
+    loadFavoriteIds().catch(console.error);
+    return subscribeFavorites(() => {
+      setSaved(getFavoriteIds().includes(favoriteId(destination)));
+    });
+  }, [destination]);
+
+  async function handleFavorite() {
+    const session = await getCurrentUser().catch(() => null);
+
+    if (!session?.user) {
+      navigate("/login", { state: { from: location } });
+      return;
+    }
+
+    try {
+      setSaved(await toggleFavorite(destination));
+    } catch (error) {
+      window.alert(error.message || "Could not save favorite");
+    }
+  }
+
   return (
-    <Link className="destination-tile" to={`/destinations/${destination.id}`}>
-      <div className="tile-image">{destination.image ? <img src={destination.image} alt={`${destination.name} destination`} /> : <ImagePlaceholder />}<span className="heart">♡</span></div>
-      <div className="tile-copy"><span>{destination.country} · {destination.category}</span><h3>{destination.name}</h3><small>Explore destination <b>→</b></small></div>
-    </Link>
+    <article className="destination-tile">
+      <Link
+        className="destination-main-link"
+        to={`/destinations/${destination.id}`}
+      >
+        <div className="tile-image">
+          {destination.image ? (
+            <img
+              src={destination.image}
+              alt={`${destination.name} destination`}
+            />
+          ) : (
+            <ImagePlaceholder />
+          )}
+        </div>
+
+        <div className="tile-copy">
+          <span>
+            {destination.country} · {destination.category}
+          </span>
+          <h3>{destination.name}</h3>
+          <small>
+            Explore destination <b>→</b>
+          </small>
+        </div>
+      </Link>
+
+      <button
+        type="button"
+        className={`favorite-heart ${saved ? "is-saved" : ""}`}
+        onClick={handleFavorite}
+        aria-label={`${saved ? "Remove" : "Add"} ${destination.name} ${saved ? "from" : "to"} favorites`}
+        aria-pressed={saved}
+        title={saved ? "Remove from Favorites" : "Save to Favorites"}
+      >
+        {saved ? "♥" : "♡"}
+      </button>
+    </article>
   );
 }
+
 
 function HotelCard({ hotel }) {
   const official = hotelOfficialDetails[hotel.id];

@@ -9,13 +9,19 @@ const dns = require("node:dns");
 if (process.env.NODE_ENV !== "production") {
   dns.setServers(["8.8.8.8", "1.1.1.1"]);
 }
+
 const connectDB = require("./config/db");
 const destinationRoutes = require("./routes/destinationRoutes");
 const authRoutes = require("./routes/authRoutes");
+const favoriteRoutes = require("./routes/favoriteRoutes");
 
 const app = express();
 
-const allowedOrigins = (process.env.FRONTEND_ORIGINS || "http://localhost:5173,http://127.0.0.1:5173").split(",");
+const allowedOrigins = (
+  process.env.FRONTEND_ORIGINS ||
+  "http://localhost:5173,http://127.0.0.1:5173"
+).split(",");
+
 app.use(cors({ origin: allowedOrigins, credentials: true }));
 app.use(express.json());
 app.use(cookieParser());
@@ -32,7 +38,12 @@ app.get("/api/health", (req, res) => {
 
 // Destination CRUD endpoints
 app.use("/api/destinations", destinationRoutes);
+
+// Authentication endpoints
 app.use("/api/auth", authRoutes);
+
+// Favorites endpoints
+app.use("/api/favorites", favoriteRoutes);
 
 const PORT = process.env.PORT || 5000;
 
