@@ -1,7 +1,7 @@
 const source =
   import.meta.env.VITE_API_URL ||
   import.meta.env.VITE_API_BASE_URL ||
-  "http://localhost:5000";
+  "/api";
 
 const base = source.replace(/\/+$/, "");
 const url = base.endsWith("/api") ? `${base}/trips` : `${base}/api/trips`;

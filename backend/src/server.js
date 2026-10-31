@@ -1,5 +1,7 @@
 
 const express = require("express");
+const fs = require("node:fs");
+const path = require("node:path");
 const cors = require("cors");
 const cookieParser = require("cookie-parser");
 const mongoose = require("mongoose");
@@ -46,6 +48,24 @@ app.use("/api/trips", tripRoutes);
 
 // Favorites endpoints
 app.use("/api/favorites", favoriteRoutes);
+
+const frontendDist = path.resolve(__dirname, "../../frontend/dist");
+
+if (fs.existsSync(path.join(frontendDist, "index.html"))) {
+  app.use(express.static(frontendDist));
+
+  app.use((req, res, next) => {
+    if (
+      req.method !== "GET" ||
+      req.path.startsWith("/api") ||
+      path.extname(req.path)
+    ) {
+      return next();
+    }
+
+    return res.sendFile(path.join(frontendDist, "index.html"));
+  });
+}
 
 const PORT = process.env.PORT || 5000;
 
